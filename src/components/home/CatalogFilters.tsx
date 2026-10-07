@@ -1,4 +1,5 @@
 import React from 'react'
+import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { NFTCategory, NFTTab, NFTSortOption } from '@/types'
 import { useMeta } from '@/hooks/useNFTs'
@@ -219,8 +220,8 @@ interface CatalogTabsProps {
 
 export function CatalogTabs({ selectedTab, onTabChange, sortBy, onSortChange, action }: CatalogTabsProps) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4 font-mono text-sm text-kurio-cream sm:text-[15px]">
-      <div className="flex gap-4 overflow-x-auto sm:gap-[22px]" role="group" aria-label="Listagem">
+    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4 font-mono text-[13px] text-kurio-cream sm:text-[15px]">
+      <div className="flex gap-3 overflow-x-auto sm:gap-[22px]" role="group" aria-label="Listagem">
         {TABS.map((tab) => {
           const active = selectedTab === tab.value
           return (
@@ -243,7 +244,7 @@ export function CatalogTabs({ selectedTab, onTabChange, sortBy, onSortChange, ac
         })}
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="hidden items-center gap-4 md:flex">
         {action}
         <Select value={sortBy} onValueChange={(value) => onSortChange(value as NFTSortOption)}>
           <SelectTrigger aria-label="Ordenar por" className="pb-1 leading-6">
@@ -260,5 +261,48 @@ export function CatalogTabs({ selectedTab, onTabChange, sortBy, onSortChange, ac
         </Select>
       </div>
     </div>
+  )
+}
+
+// ─── Ordenação no painel de filtros (mobile) ───────────────────────────────
+
+export function SortOptions({
+  sortBy,
+  onSortChange,
+  className,
+}: {
+  sortBy: NFTSortOption
+  onSortChange: (sort: NFTSortOption) => void
+  className?: string
+}) {
+  return (
+    <fieldset className={cn('bg-kurio-surface px-5 pt-4 font-mono text-kurio-cream', className)}>
+      <legend className="float-left mb-1.5 w-full text-lg leading-7 font-semibold">Ordenar por</legend>
+      <div className="clear-both">
+        {SORT_OPTIONS.map((opt) => {
+          const checked = sortBy === opt.value
+          return (
+            <label
+              key={opt.value}
+              className={cn(
+                'flex h-10 cursor-pointer items-center justify-between rounded-[4px] px-3 text-[15px] transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-kurio-orange',
+                checked ? 'text-kurio-orange-light' : 'text-kurio-sand hover:text-kurio-cream',
+              )}
+            >
+              <input
+                type="radio"
+                name="catalog-sort"
+                value={opt.value}
+                checked={checked}
+                onChange={() => onSortChange(opt.value)}
+                className="sr-only"
+              />
+              {opt.label}
+              {checked && <Check size={16} aria-hidden />}
+            </label>
+          )
+        })}
+      </div>
+    </fieldset>
   )
 }

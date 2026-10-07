@@ -32,7 +32,7 @@ export function Navbar() {
   }, [menuOpen])
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-kurio-bg font-mono text-kurio-cream">
+    <header className="sticky top-0 z-50 hidden w-full bg-kurio-bg font-mono text-kurio-cream md:block">
       <div className="mx-auto max-w-[1440px] px-4 md:px-6">
         <div className="relative mx-auto flex h-[68px] max-w-[1200px] items-center justify-between border-b border-kurio-line pt-3">
           {/* Logo */}
@@ -52,6 +52,7 @@ export function Navbar() {
                   <li key={link.href} className="flex">
                     <Link
                       to={link.href}
+                      activeOptions={{ exact: true }}
                       aria-current={isActive ? 'page' : undefined}
                       className={cn(
                         'relative pt-[21px] text-base leading-6 transition-colors',
@@ -137,6 +138,7 @@ export function Navbar() {
                 <li key={link.href}>
                   <Link
                     to={link.href}
+                    activeOptions={{ exact: true }}
                     aria-current={isActive ? 'page' : undefined}
                     className={cn(
                       'block border-l-[3px] py-3 pl-3 text-base transition-colors',

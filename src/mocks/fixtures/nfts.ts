@@ -393,6 +393,9 @@ export const MOCK_BANNERS: FeaturedBanner[] = [
     image: apeEmerald900,
     imageSrcSet: `${apeEmerald480} 480w, ${apeEmerald900} 900w`,
     imageAlt: 'Emerald Ape: macaco com óculos redondos, jaqueta college verde e colar de esmeralda',
+    mobileTitle: 'Seja dono da cultura digital',
+    mobileDescription: 'Descubra NFTs selecionados de criadores do mundo todo.',
+    accentImage: apeSage480,
   },
   {
     id: 'banner-002',
@@ -405,6 +408,9 @@ export const MOCK_BANNERS: FeaturedBanner[] = [
     image: apeIvory900,
     imageSrcSet: `${apeIvory480} 480w, ${apeIvory900} 900w`,
     imageAlt: 'Ivory Baron: gorila de pelo escuro com gola alta verde e blazer creme',
+    mobileTitle: 'Novas coleções toda semana',
+    mobileDescription: 'Edições limitadas com procedência verificada.',
+    accentImage: apeGolden480,
   },
   {
     id: 'banner-003',
@@ -417,6 +423,9 @@ export const MOCK_BANNERS: FeaturedBanner[] = [
     image: apeGolden900,
     imageSrcSet: `${apeGolden480} 480w, ${apeGolden900} 900w`,
     imageAlt: 'Golden Beat: macaco dourado com fones de ouvido verdes e jaqueta creme',
+    mobileTitle: 'Os mais cobiçados agora',
+    mobileDescription: 'As peças mais disputadas da semana.',
+    accentImage: apeEmerald480,
   },
 ]
 
