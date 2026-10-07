@@ -47,6 +47,11 @@ function updateCaches(queryClient: QueryClient, event: NFTUpdatedEvent) {
         }
       : cart,
   )
+  // NFT no carrinho mudou: a cotação (subtotal, total e avisos) vem de novo da API
+  const cart = queryClient.getQueryData<Cart>(cartKeys.all)
+  if (cart?.items.some((item) => item.nftId === event.nftId)) {
+    queryClient.invalidateQueries({ queryKey: cartKeys.quote })
+  }
 }
 
 /**

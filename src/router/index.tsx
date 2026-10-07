@@ -8,6 +8,7 @@ import {
 import { Layout } from '@/components/layout/Layout'
 import { HomePage } from '@/pages/HomePage'
 import { NftDetailPage } from '@/pages/NftDetailPage'
+import { CartPage } from '@/pages/CartPage'
 import { ComingSoonPage, NotFoundPage, UnavailablePage } from '@/pages/StatusPage'
 import { parseCatalogSearch } from '@/lib/catalogSearch'
 
@@ -62,7 +63,13 @@ const loginRoute = createRoute({
 const cartRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/carrinho',
-  component: () => <ComingSoonPage title="Carrinho" />,
+  component: CartPage,
+})
+
+const checkoutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/pagamento',
+  component: () => <ComingSoonPage title="Pagamento" />,
 })
 
 const profileRoute = createRoute({
@@ -91,6 +98,7 @@ const routeTree = rootRoute.addChildren([
   nftDetailRoute,
   loginRoute,
   cartRoute,
+  checkoutRoute,
   profileRoute,
   favoritesRoute,
   unavailable('/criadores', 'Criadores'),
