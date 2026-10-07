@@ -141,10 +141,10 @@ export interface FeaturedBanner {
 // ─── User / Auth ───────────────────────────────────────────────────────────
 export interface User {
   id: string
-  name: string
+  username: string
+  displayName: string
   email: string
   avatar?: string
-  bio?: string
   createdAt: string
 }
 
@@ -154,7 +154,7 @@ export interface LoginPayload {
 }
 
 export interface RegisterPayload {
-  name: string
+  username: string
   email: string
   password: string
 }
@@ -162,6 +162,8 @@ export interface RegisterPayload {
 export interface AuthResponse {
   user: User
   token: string
+  /** Momento em que a sessão expira */
+  expiresAt: string
 }
 
 // ─── Cart ──────────────────────────────────────────────────────────────────

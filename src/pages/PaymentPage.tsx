@@ -6,6 +6,7 @@ import { useCart, useCartQuote } from '@/hooks/useCart'
 import { useProfile, useWallets } from '@/hooks/useCheckout'
 import { useCheckoutFlow } from '@/hooks/useCheckoutFlow'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { CHECKOUT_DRAFT_KEY } from '@/hooks/useAuth'
 import {
   validateCheckout,
   type CheckoutErrors,
@@ -56,13 +57,36 @@ export function PaymentPage() {
     }
   }, [])
 
-  // Pré-preenche com o perfil e a carteira principal cadastrada
+  // Retoma o rascunho (ex.: sessão expirada no meio do checkout) ou pré-preenche
+  // com o perfil e a carteira principal; sem carteira cadastrada, informa outra
   React.useEffect(() => {
-    if (prefilled.current || !profile || !wallets.length) return
+    if (prefilled.current || !profile || walletsLoading) return
     prefilled.current = true
+    try {
+      const draft = sessionStorage.getItem(CHECKOUT_DRAFT_KEY)
+      if (draft) return setForm({ ...EMPTY_FORM, ...(JSON.parse(draft) as Partial<CheckoutForm>) })
+    } catch {
+      // rascunho inválido: segue com o perfil
+    }
     const primary = wallets.find((w) => w.isPrimary) ?? wallets[0]
-    setForm((f) => ({ ...f, ...profile, walletId: primary.id, connector: primary.connector }))
-  }, [profile, wallets])
+    setForm((f) => ({
+      ...f,
+      ...profile,
+      useOtherWallet: !primary,
+      walletId: primary?.id ?? '',
+      connector: primary?.connector ?? '',
+    }))
+  }, [profile, wallets, walletsLoading])
+
+  // Rascunho salvo a cada alteração (removido no logout/troca de conta)
+  React.useEffect(() => {
+    if (!prefilled.current) return
+    try {
+      sessionStorage.setItem(CHECKOUT_DRAFT_KEY, JSON.stringify(form))
+    } catch {
+      // ignorado
+    }
+  }, [form])
 
   const focusFirstError = React.useCallback((errs: CheckoutErrors) => {
     const first = FIELD_ORDER.find((f) => errs[f])

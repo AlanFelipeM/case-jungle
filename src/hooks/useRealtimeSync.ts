@@ -2,6 +2,7 @@ import React from 'react'
 import { useQueryClient, type QueryClient } from '@tanstack/react-query'
 import type { Cart, NFT, NFTListResponse, NFTUpdatedEvent, Order, OrderUpdatedEvent } from '@/types'
 import { getSocket } from '@/lib/realtime'
+import { useToken } from '@/lib/session'
 import { nftKeys } from '@/hooks/useNFTs'
 import { cartKeys } from '@/hooks/useCart'
 import { checkoutKeys } from '@/hooks/useCheckout'
@@ -61,6 +62,8 @@ function updateCaches(queryClient: QueryClient, event: NFTUpdatedEvent) {
  */
 export function useRealtimeSync() {
   const queryClient = useQueryClient()
+  // Nova sessão (login, logout, troca de usuário) → nova conexão
+  const token = useToken()
 
   React.useEffect(() => {
     let cancelled = false
@@ -117,5 +120,5 @@ export function useRealtimeSync() {
       cancelled = true
       cleanup()
     }
-  }, [queryClient])
+  }, [queryClient, token])
 }

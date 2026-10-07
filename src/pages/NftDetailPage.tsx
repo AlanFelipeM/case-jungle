@@ -1,8 +1,10 @@
 import React from 'react'
-import { Link, useCanGoBack, useLocation, useNavigate, useParams, useRouter } from '@tanstack/react-router'
+import { Link, useCanGoBack, useNavigate, useParams, useRouter } from '@tanstack/react-router'
 import { ChevronLeft, Heart, Mail, RefreshCw, Star, X } from 'lucide-react'
 import type { NFT } from '@/types'
 import { useNFT } from '@/hooks/useNFTs'
+import { useFavorite } from '@/hooks/useFavorites'
+import { useAuthPrompt } from '@/components/auth/AuthProvider'
 import { getErrorStatus } from '@/lib/apiError'
 import { LinkedinIcon, XIcon } from '@/components/icons'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -69,8 +71,6 @@ export function NftDetailPage() {
 }
 
 function NftDetail({ nft }: { nft: NFT }) {
-  const navigate = useNavigate()
-  const location = useLocation()
   const [tab, setTab] = React.useState<NftTab>('details')
   const tabsRef = React.useRef<HTMLDivElement>(null)
 
@@ -86,10 +86,7 @@ function NftDetail({ nft }: { nft: NFT }) {
   return (
     <div className={`${PAGE} max-md:bg-[#281813]`}>
       <div className="mx-auto max-w-[1200px]">
-        <MobileTopBar
-          onFavorite={() => navigate({ to: '/login', search: { redirect: location.href } })}
-          nftName={nft.name}
-        />
+        <MobileTopBar nft={nft} />
         <div className="hidden md:block">
           <Breadcrumb />
         </div>
@@ -218,7 +215,9 @@ function useLiveUpdateNotice(nft: NFT) {
   return { message, dismiss: () => setMessage(null) }
 }
 
-function MobileTopBar({ onFavorite, nftName }: { onFavorite: () => void; nftName: string }) {
+function MobileTopBar({ nft }: { nft: NFT }) {
+  const { openAuth } = useAuthPrompt()
+  const favorite = useFavorite(nft, () => openAuth())
   const router = useRouter()
   const navigate = useNavigate()
   const canGoBack = useCanGoBack()
@@ -235,8 +234,14 @@ function MobileTopBar({ onFavorite, nftName }: { onFavorite: () => void; nftName
       >
         <ChevronLeft size={18} aria-hidden />
       </button>
-      <button type="button" onClick={onFavorite} aria-label={`Favoritar ${nftName} (requer login)`} className={`${button} text-kurio-sand`}>
-        <Heart size={15} aria-hidden />
+      <button
+        type="button"
+        onClick={favorite.toggle}
+        aria-label={favorite.label}
+        aria-pressed={favorite.isFavorite}
+        className={`${button} ${favorite.isFavorite ? 'text-kurio-orange-light' : 'text-kurio-sand'}`}
+      >
+        <Heart size={15} aria-hidden fill={favorite.isFavorite ? 'currentColor' : 'none'} />
       </button>
     </div>
   )

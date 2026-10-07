@@ -2,9 +2,10 @@ import { http, HttpResponse, delay } from 'msw'
 import { MAX_QUANTITY_PER_ORDER, type Cart, type CartItem, type Quote, type QuoteLine } from '@/types'
 import { MOCK_NFTS } from '@/mocks/fixtures/nfts'
 import { addEth, compareEth, fromWei, mulEth, percentOfEth, toWei } from '@/lib/eth'
+import { authRequest } from '@/mocks/auth'
 
 const BASE = '/api'
-const STORAGE_KEY = 'kurio:mock:cart'
+const GUEST = 'guest'
 const NETWORK_FEE = '0.016'
 const QUOTE_TTL_MS = 5 * 60_000
 
@@ -24,10 +25,13 @@ function validCoupon(code: string | undefined) {
 
 // ─── Persistência ──────────────────────────────────────────────────────────
 
-/** Estado do carrinho do visitante, persistido para sobreviver a refresh */
-export function readCart(): Cart {
+/** Cada conta tem o seu carrinho; o visitante usa o carrinho "guest" */
+const cartKey = (owner: string) => (owner === GUEST ? 'kurio:mock:cart' : `kurio:mock:cart:${owner}`)
+
+/** Carrinho persistido para sobreviver a refresh */
+export function readCart(owner: string = GUEST): Cart {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY)
+    const stored = localStorage.getItem(cartKey(owner))
     if (stored) {
       const cart = JSON.parse(stored) as Cart
       // Carrinhos salvos antes do campo "id" nos itens
@@ -37,25 +41,54 @@ export function readCart(): Cart {
   } catch {
     // armazenamento indisponível ou corrompido: volta ao cenário padrão
   }
-  return { id: 'cart-guest', items: [], updatedAt: new Date(0).toISOString() }
+  return { id: `cart-${owner}`, items: [], updatedAt: new Date(0).toISOString() }
 }
 
-export function writeCart(cart: Cart) {
+export function writeCart(cart: Cart, owner: string = GUEST) {
   cart.updatedAt = new Date().toISOString()
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(cart))
+    localStorage.setItem(cartKey(owner), JSON.stringify(cart))
   } catch {
     // sem persistência disponível: o estado vale só para esta resposta
   }
 }
 
-/** Reinicia o carrinho (reset de cenário) */
+/** Reinicia todos os carrinhos (reset de cenário) */
 export function resetCart() {
   try {
-    localStorage.removeItem(STORAGE_KEY)
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith('kurio:mock:cart'))
+      .forEach((key) => localStorage.removeItem(key))
   } catch {
     // ignorado
   }
+}
+
+/** Ao entrar, os itens do visitante passam para o carrinho da conta (respeitando os limites) */
+export function mergeGuestCart(userId: string) {
+  const guest = readCart(GUEST)
+  if (!guest.items.length) return
+  const cart = readCart(userId)
+  for (const item of guest.items) {
+    const edition = MOCK_NFTS.find((n) => n.id === item.nftId)?.editions.find((e) => e.id === item.editionId)
+    if (!edition) continue
+    const limit = quantityLimit(edition.available)
+    const existing = cart.items.find((i) => i.id === item.id)
+    if (existing) existing.quantity = Math.min(existing.quantity + item.quantity, Math.max(limit, existing.quantity))
+    else cart.items.push({ ...item, quantity: Math.min(item.quantity, Math.max(limit, 1)) })
+  }
+  cart.couponCode ??= guest.couponCode
+  writeCart(cart, userId)
+  writeCart({ ...guest, items: [], couponCode: undefined }, GUEST)
+}
+
+/** Dono do carrinho da requisição; sessão expirada → 401 */
+async function resolveOwner(request: Request): Promise<string | Response> {
+  const auth = await authRequest(request)
+  if (auth.status === 'expired') {
+    return error(401, 'SESSION_EXPIRED', 'Sua sessão expirou. Entre novamente para continuar.')
+  }
+  return auth.status === 'authenticated' ? auth.user.id : GUEST
 }
 
 /** Itens com os dados atuais do catálogo (REST reflete preço e disponibilidade vigentes) */
@@ -118,19 +151,25 @@ interface AddCartItemBody {
 
 export const cartHandlers = [
   // GET /api/cart — carrinho atual
-  http.get(`${BASE}/cart`, async () => {
+  http.get(`${BASE}/cart`, async ({ request }) => {
+    const owner = await resolveOwner(request)
+    if (owner instanceof Response) return owner
     await delay(100)
-    return HttpResponse.json(withCurrentData(readCart()))
+    return HttpResponse.json(withCurrentData(readCart(owner)))
   }),
 
   // GET /api/cart/quote — subtotal, desconto, taxa e total com os preços atuais
-  http.get(`${BASE}/cart/quote`, async () => {
+  http.get(`${BASE}/cart/quote`, async ({ request }) => {
+    const owner = await resolveOwner(request)
+    if (owner instanceof Response) return owner
     await delay(150)
-    return HttpResponse.json(buildQuote(readCart()))
+    return HttpResponse.json(buildQuote(readCart(owner)))
   }),
 
   // POST /api/cart/items — adiciona (ou soma) um NFT/edição ao carrinho
   http.post(`${BASE}/cart/items`, async ({ request }) => {
+    const owner = await resolveOwner(request)
+    if (owner instanceof Response) return owner
     await delay(250)
     const { nftId, editionId, quantity } = (await request.json()) as AddCartItemBody
 
@@ -144,7 +183,7 @@ export const cartHandlers = [
       return error(409, 'EDITION_UNAVAILABLE', 'Esta edição está esgotada.', { available: 0 })
     }
 
-    const cart = readCart()
+    const cart = readCart(owner)
     const existing = cart.items.find((item) => item.id === itemId(nft.id, edition.id))
     const limit = quantityLimit(edition.available)
     const inCart = existing?.quantity ?? 0
@@ -174,18 +213,20 @@ export const cartHandlers = [
       }
       cart.items.push(item)
     }
-    writeCart(cart)
+    writeCart(cart, owner)
     return HttpResponse.json(withCurrentData(cart), { status: 201 })
   }),
 
   // PATCH /api/cart/items/:id — altera a quantidade
   http.patch(`${BASE}/cart/items/:id`, async ({ request, params }) => {
+    const owner = await resolveOwner(request)
+    if (owner instanceof Response) return owner
     await delay(250)
     const { quantity } = (await request.json()) as { quantity?: number }
     if (!Number.isInteger(quantity) || (quantity as number) < 1) {
       return error(422, 'VALIDATION_ERROR', 'Informe uma quantidade válida.')
     }
-    const cart = readCart()
+    const cart = readCart(owner)
     const item = cart.items.find((i) => i.id === params.id)
     const edition = MOCK_NFTS.find((n) => n.id === item?.nftId)?.editions.find((e) => e.id === item?.editionId)
     if (!item || !edition) return error(404, 'NOT_FOUND', 'Item não encontrado no carrinho.')
@@ -203,24 +244,28 @@ export const cartHandlers = [
       )
     }
     item.quantity = quantity as number
-    writeCart(cart)
+    writeCart(cart, owner)
     return HttpResponse.json(withCurrentData(cart))
   }),
 
   // DELETE /api/cart/items/:id — remove o item
-  http.delete(`${BASE}/cart/items/:id`, async ({ params }) => {
+  http.delete(`${BASE}/cart/items/:id`, async ({ request, params }) => {
+    const owner = await resolveOwner(request)
+    if (owner instanceof Response) return owner
     await delay(200)
-    const cart = readCart()
+    const cart = readCart(owner)
     if (!cart.items.some((i) => i.id === params.id)) {
       return error(404, 'NOT_FOUND', 'Item não encontrado no carrinho.')
     }
     cart.items = cart.items.filter((i) => i.id !== params.id)
-    writeCart(cart)
+    writeCart(cart, owner)
     return HttpResponse.json(withCurrentData(cart))
   }),
 
   // POST /api/cart/coupon — aplica um cupom
   http.post(`${BASE}/cart/coupon`, async ({ request }) => {
+    const owner = await resolveOwner(request)
+    if (owner instanceof Response) return owner
     await delay(300)
     const { code } = (await request.json()) as { code?: string }
     const normalized = code?.trim().toUpperCase() ?? ''
@@ -230,28 +275,32 @@ export const cartHandlers = [
     if (new Date(coupon.expiresAt).getTime() <= Date.now()) {
       return error(422, 'COUPON_EXPIRED', 'Este código promocional expirou.')
     }
-    const cart = readCart()
+    const cart = readCart(owner)
     if (!cart.items.length) return error(422, 'CART_EMPTY', 'Adicione itens ao carrinho antes de aplicar um código.')
     cart.couponCode = normalized
-    writeCart(cart)
+    writeCart(cart, owner)
     return HttpResponse.json(withCurrentData(cart))
   }),
 
   // DELETE /api/cart/coupon — remove o cupom
-  http.delete(`${BASE}/cart/coupon`, async () => {
+  http.delete(`${BASE}/cart/coupon`, async ({ request }) => {
+    const owner = await resolveOwner(request)
+    if (owner instanceof Response) return owner
     await delay(200)
-    const cart = readCart()
+    const cart = readCart(owner)
     delete cart.couponCode
-    writeCart(cart)
+    writeCart(cart, owner)
     return HttpResponse.json(withCurrentData(cart))
   }),
 
   // POST /api/cart/confirm-prices — o colecionador aceita os preços atuais
-  http.post(`${BASE}/cart/confirm-prices`, async () => {
+  http.post(`${BASE}/cart/confirm-prices`, async ({ request }) => {
+    const owner = await resolveOwner(request)
+    if (owner instanceof Response) return owner
     await delay(200)
-    const cart = withCurrentData(readCart())
+    const cart = withCurrentData(readCart(owner))
     cart.items = cart.items.map((item) => ({ ...item, priceSnapshot: item.nft.price }))
-    writeCart(cart)
+    writeCart(cart, owner)
     return HttpResponse.json(cart)
   }),
 ]

@@ -5,6 +5,8 @@ import { Heart, Minus, Plus } from 'lucide-react'
 import { MAX_QUANTITY_PER_ORDER, type NFT, type NFTEdition } from '@/types'
 import { ShopIcon } from '@/components/icons'
 import { useAddToCart } from '@/hooks/useCart'
+import { useFavorite } from '@/hooks/useFavorites'
+import { useAuthPrompt } from '@/components/auth/AuthProvider'
 import { nftKeys } from '@/hooks/useNFTs'
 import { getErrorMessage, getErrorStatus } from '@/lib/apiError'
 import { cn } from '@/lib/utils'
@@ -71,7 +73,8 @@ export function PurchasePanel({ nft }: { nft: NFT }) {
     )
   }
 
-  const favorite = () => navigate({ to: '/login', search: { redirect: location.href } })
+  const { openAuth } = useAuthPrompt()
+  const favorite = useFavorite(nft, () => openAuth({ redirect: location.href }))
 
   const feedback = addToCart.isError ? (
     <p role="alert" className="text-sm text-[#f4a28c]">
@@ -147,12 +150,13 @@ export function PurchasePanel({ nft }: { nft: NFT }) {
             </button>
             <button
               type="button"
-              onClick={favorite}
-              aria-label={`Favoritar ${nft.name} (requer login)`}
+              onClick={favorite.toggle}
+              aria-label={favorite.label}
+              aria-pressed={favorite.isFavorite}
               className="inline-flex h-10 w-[130px] items-center justify-center gap-2 rounded-[4px] border border-kurio-orange px-3 text-sm text-kurio-orange-light transition-colors hover:bg-kurio-orange hover:text-kurio-bg"
             >
-              <Heart size={18} aria-hidden />
-              Favoritar
+              <Heart size={18} aria-hidden fill={favorite.isFavorite ? 'currentColor' : 'none'} />
+              {favorite.isFavorite ? 'Favoritado' : 'Favoritar'}
             </button>
           </div>
         </div>
