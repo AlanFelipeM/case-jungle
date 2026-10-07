@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-router'
 import { Layout } from '@/components/layout/Layout'
 import { HomePage } from '@/pages/HomePage'
+import { NftDetailPage } from '@/pages/NftDetailPage'
 import { ComingSoonPage, NotFoundPage, UnavailablePage } from '@/pages/StatusPage'
 import { parseCatalogSearch } from '@/lib/catalogSearch'
 
@@ -37,13 +38,14 @@ const mercadoRoute = createRoute({
   },
 })
 
-// Telas do escopo ainda em implementação
+// Detalhe do NFT (acesso direto pela URL)
 const nftDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/nft/$nftId',
-  component: () => <ComingSoonPage title="Detalhes do NFT" />,
+  component: NftDetailPage,
 })
 
+// Telas do escopo ainda em implementação
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/login',
@@ -95,7 +97,8 @@ const routeTree = rootRoute.addChildren([
   unavailable('/aprenda', 'Aprenda'),
   unavailable('/blog/$slug', 'Diário da Cunhagem'),
   unavailable('/ajuda/$', 'Central de ajuda'),
-  unavailable('/perfil/$', 'Área do colecionador'),
+  unavailable('/perfil/colecao', 'Minha coleção'),
+  unavailable('/perfil/atividade', 'Atividade'),
   unavailable('/estudio', 'Estúdio do criador'),
 ])
 

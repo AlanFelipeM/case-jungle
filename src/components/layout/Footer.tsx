@@ -24,8 +24,8 @@ const FEATURES = [
 ]
 
 type FooterLink = { label: string } & (
-  | { to: '/perfil' | '/favoritos' | '/estudio' }
-  | { to: '/perfil/$' | '/ajuda/$'; splat: string }
+  | { to: '/perfil' | '/perfil/colecao' | '/perfil/atividade' | '/favoritos' | '/estudio' }
+  | { to: '/ajuda/$'; splat: string }
   | { to: '/'; category: NFTCategory }
 )
 
@@ -34,8 +34,8 @@ const FOOTER_LINKS: { title: string; links: FooterLink[] }[] = [
     title: 'Meu perfil',
     links: [
       { label: 'Meu perfil', to: '/perfil' },
-      { label: 'Minha coleção', to: '/perfil/$', splat: 'colecao' },
-      { label: 'Atividade', to: '/perfil/$', splat: 'atividade' },
+      { label: 'Minha coleção', to: '/perfil/colecao' },
+      { label: 'Atividade', to: '/perfil/atividade' },
       { label: 'Estúdio do criador', to: '/estudio' },
       { label: 'Lista de interesse', to: '/favoritos' },
     ],

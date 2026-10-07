@@ -47,7 +47,9 @@ export function Navbar() {
           >
             <ul className="flex gap-10">
               {NAV_LINKS.map((link) => {
-                const isActive = location.pathname === link.href
+                const isActive =
+                  location.pathname === link.href ||
+                  (link.href === '/mercado' && location.pathname.startsWith('/nft/'))
                 return (
                   <li key={link.href} className="flex">
                     <Link
@@ -133,7 +135,9 @@ export function Navbar() {
         >
           <ul className="mx-auto flex max-w-[1200px] flex-col">
             {NAV_LINKS.map((link) => {
-              const isActive = location.pathname === link.href
+              const isActive =
+                  location.pathname === link.href ||
+                  (link.href === '/mercado' && location.pathname.startsWith('/nft/'))
               return (
                 <li key={link.href}>
                   <Link

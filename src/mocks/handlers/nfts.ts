@@ -1,5 +1,5 @@
 import { http, HttpResponse, delay } from 'msw'
-import type { NFTListParams } from '@/types'
+import type { NFTListParams, NFTReview, NFTReviewsResponse } from '@/types'
 import {
   MOCK_NFTS,
   MOCK_BANNERS,
@@ -10,6 +10,16 @@ import {
 } from '@/mocks/fixtures/nfts'
 
 const BASE = '/api'
+
+const REVIEW_AUTHORS = ['ana.eth', 'colecionador_br', 'pixelmonk', 'luiza.nft', 'rafa_mint', 'jungle.dao', 'marina.art', 'theo.eth']
+const REVIEW_COMMENTS = [
+  'Arte impecável em alta resolução, chegou na carteira em segundos.',
+  'Procedência verificada e metadados completos. Recomendo a coleção.',
+  'Os detalhes de luz e textura impressionam ainda mais no zoom.',
+  'Compra tranquila, edição bem documentada e criador muito presente.',
+  'Uma das peças favoritas da minha coleção, ótimo custo-benefício.',
+  'Acesso aos lançamentos exclusivos já valeu a aquisição.',
+]
 
 // Helper to simulate variable network latency
 async function simulateLatency(ms = 300) {
@@ -24,6 +34,7 @@ export const nftHandlers = [
     const params: NFTListParams = {
       search: url.searchParams.get('search') || undefined,
       category: (url.searchParams.get('category') as NFTListParams['category']) || undefined,
+      collection: url.searchParams.get('collection') || undefined,
       priceMin: url.searchParams.get('priceMin') || undefined,
       priceMax: url.searchParams.get('priceMax') || undefined,
       network: url.searchParams.get('network') || undefined,
@@ -51,6 +62,11 @@ export const nftHandlers = [
           n.collectionName.toLowerCase().includes(q) ||
           n.creatorName.toLowerCase().includes(q),
       )
+    }
+
+    // Filter by collection
+    if (params.collection) {
+      results = results.filter((n) => n.collectionId === params.collection)
     }
 
     // Filter by category
@@ -81,7 +97,10 @@ export const nftHandlers = [
         break
       case 'popular': {
         const sold = (n: (typeof results)[number]) =>
-          n.editions.reduce((sum, e) => sum + (e.total - e.available), 0)
+          n.editions.reduce(
+            (sum, e) => sum + (e.total !== null && e.available !== null ? e.total - e.available : 0),
+            0,
+          )
         results.sort((a, b) => sold(b) - sold(a))
         break
       }
@@ -113,6 +132,27 @@ export const nftHandlers = [
   http.get(`${BASE}/nfts/featured`, async () => {
     await simulateLatency(150)
     return HttpResponse.json(FEATURED_NFT)
+  }),
+
+  // GET /api/nfts/:id/reviews — avaliações de colecionadores
+  http.get(`${BASE}/nfts/:id/reviews`, async ({ params: routeParams }) => {
+    await simulateLatency(200)
+    const nft = MOCK_NFTS.find((n) => n.id === routeParams.id)
+    if (!nft) {
+      return HttpResponse.json({ error: 'NFT não encontrado' }, { status: 404 })
+    }
+    const items: NFTReview[] = Array.from({ length: nft.reviewCount }, (_, i) => {
+      const seed = nft.id.length * 31 + i * 17
+      return {
+        id: `${nft.id}-review-${i + 1}`,
+        author: REVIEW_AUTHORS[seed % REVIEW_AUTHORS.length],
+        rating: i % 6 === 5 ? 4 : 5,
+        comment: REVIEW_COMMENTS[(seed + i) % REVIEW_COMMENTS.length],
+        date: new Date(Date.UTC(2026, 8, 28) - i * 86_400_000 * 2).toISOString(),
+      }
+    })
+    const body: NFTReviewsResponse = { items, total: items.length, average: nft.rating }
+    return HttpResponse.json(body)
   }),
 
   // GET /api/nfts/:id — detail
