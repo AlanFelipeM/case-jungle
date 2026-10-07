@@ -15,7 +15,17 @@ export function Layout({ children }: LayoutProps) {
   // Mobile: no detalhe e no carrinho, as barras de compra/resumo substituem a navegação inferior
   const pathname = useLocation({ select: (l) => l.pathname })
   const isDetail = pathname.startsWith('/nft/')
+  // A confirmação do pedido é exibida em tela cheia, sem navegação
+  const isReceipt = pathname.startsWith('/pedido/')
   const showTabBar = !isDetail && pathname !== '/carrinho' && pathname !== '/pagamento'
+
+  if (isReceipt) {
+    return (
+      <main id="main-content" className="min-h-screen bg-kurio-bg">
+        {children}
+      </main>
+    )
+  }
 
   return (
     <div
