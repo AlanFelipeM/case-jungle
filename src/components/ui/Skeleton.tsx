@@ -45,12 +45,9 @@ export function NFTGridSkeleton({ count = 9 }: { count?: number }) {
 export function HeroSkeleton() {
   return (
     // Mesma geometria do HeroBanner para evitar layout shift (CLS)
-    <div
-      className="mx-auto grid max-w-[1200px] gap-8 lg:grid-cols-[1fr_400px] lg:gap-[30px] xl:grid-cols-[1fr_450px]"
-      role="status"
-      aria-label="Carregando destaques..."
-      aria-busy="true"
-    >
+    <div role="status" aria-label="Carregando destaques..." aria-busy="true">
+      <div className="skeleton h-[184px] rounded-2xl md:hidden" />
+    <div className="mx-auto hidden max-w-[1200px] gap-8 md:grid lg:grid-cols-[1fr_400px] lg:gap-[30px] xl:grid-cols-[1fr_450px]">
       <div className="flex flex-col lg:pl-10 lg:pt-10">
         <div className="skeleton h-5 w-40" />
         <div className="skeleton mt-3 h-[84px] w-full max-w-[490px] sm:h-[108px] lg:h-[132px]" />
@@ -58,6 +55,7 @@ export function HeroSkeleton() {
         <div className="skeleton mt-8 h-10 w-[140px]" />
       </div>
       <div className="skeleton mx-auto aspect-square w-full max-w-[450px] rounded-3xl lg:max-w-none" />
+    </div>
     </div>
   )
 }

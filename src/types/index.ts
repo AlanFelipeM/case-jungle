@@ -97,6 +97,11 @@ export interface FeaturedBanner {
   /** Variantes responsivas da imagem (atributo `srcset`) */
   imageSrcSet?: string
   imageAlt: string
+  /** Versões curtas exibidas no mobile */
+  mobileTitle?: string
+  mobileDescription?: string
+  /** Miniatura sobreposta à imagem principal (mobile) */
+  accentImage?: string
 }
 
 // ─── User / Auth ───────────────────────────────────────────────────────────

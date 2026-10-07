@@ -1,8 +1,9 @@
 import React from 'react'
 import { useNavigate, useSearch } from '@tanstack/react-router'
-import { SlidersHorizontal, X } from 'lucide-react'
+import { Settings2, SlidersHorizontal, X } from 'lucide-react'
 import { HeroBanner } from '@/components/home/HeroBanner'
-import { CatalogFilters, CatalogTabs } from '@/components/home/CatalogFilters'
+import { CatalogFilters, CatalogTabs, SortOptions } from '@/components/home/CatalogFilters'
+import { SearchIcon } from '@/components/icons'
 import { FeaturedNFTCard } from '@/components/home/FeaturedNFTCard'
 import { PromoSection } from '@/components/home/PromoSection'
 import { BlogSection } from '@/components/home/BlogSection'
@@ -26,6 +27,7 @@ export function HomePage() {
   const search = useSearch({ from: '/' })
   const navigate = useNavigate({ from: '/' })
   const catalogRef = React.useRef<HTMLElement>(null)
+  const [filtersOpen, setFiltersOpen] = React.useState(false)
 
   /** Atualiza a URL; qualquer mudança de filtro reinicia a paginação */
   const updateSearch = React.useCallback(
@@ -82,8 +84,18 @@ export function HomePage() {
 
   return (
     <>
+      {/* Busca + filtros (mobile) */}
+      <div className="px-5 pt-6 md:hidden">
+        <MobileSearchBar
+          query={search.q}
+          onSearch={(q) => updateSearch({ q })}
+          activeFilterCount={activeFilterCount}
+          onOpenFilters={() => setFiltersOpen(true)}
+        />
+      </div>
+
       {/* Hero */}
-      <div className="mx-auto max-w-[1440px] px-4 md:px-6 pt-8 pb-12">
+      <div className="mx-auto max-w-[1440px] px-5 pt-4 pb-6 md:px-6 md:pt-8 md:pb-12">
         <HeroBanner />
       </div>
 
@@ -92,11 +104,20 @@ export function HomePage() {
         ref={catalogRef}
         id="catalogo"
         aria-labelledby="catalog-heading"
-        className="mx-auto mt-10 max-w-[1440px] scroll-mt-20 px-4 md:px-6"
+        className="mx-auto max-w-[1440px] scroll-mt-6 px-5 md:mt-10 md:scroll-mt-20 md:px-6"
       >
         <h2 id="catalog-heading" className="sr-only">
           Catálogo de NFTs
         </h2>
+        <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
+        <SheetContent title="Filtros" className="bg-kurio-surface">
+          <SortOptions
+            className="md:hidden"
+            sortBy={search.sort ?? DEFAULT_SORT}
+            onSortChange={(sort) => updateSearch({ sort: sort !== DEFAULT_SORT ? sort : undefined })}
+          />
+          {filters}
+        </SheetContent>
         <div className="mx-auto grid max-w-[1200px] gap-8 lg:grid-cols-[260px_1fr] lg:gap-10 xl:grid-cols-[310px_1fr] xl:gap-12">
           {/* Sidebar (desktop) */}
           <aside aria-label="Filtros do catálogo" className="hidden lg:flex lg:flex-col lg:gap-6">
@@ -112,21 +133,16 @@ export function HomePage() {
               sortBy={search.sort ?? DEFAULT_SORT}
               onSortChange={(sort) => updateSearch({ sort: sort !== DEFAULT_SORT ? sort : undefined })}
               action={
-                <Sheet>
-                  <SheetTrigger className="inline-flex h-9 items-center gap-2 rounded-[4px] border border-kurio-outline px-3 transition-colors hover:border-kurio-orange lg:hidden">
-                    <SlidersHorizontal size={16} aria-hidden />
-                    Filtros
-                    {activeFilterCount > 0 && (
-                      <span className="grid size-5 place-items-center rounded-full bg-kurio-orange text-xs font-semibold text-kurio-bg">
-                        {activeFilterCount}
-                        <span className="sr-only"> ativos</span>
-                      </span>
-                    )}
-                  </SheetTrigger>
-                  <SheetContent title="Filtros" className="bg-kurio-surface">
-                    {filters}
-                  </SheetContent>
-                </Sheet>
+                <SheetTrigger className="inline-flex h-9 items-center gap-2 rounded-[4px] border border-kurio-outline px-3 transition-colors hover:border-kurio-orange lg:hidden">
+                  <SlidersHorizontal size={16} aria-hidden />
+                  Filtros
+                  {activeFilterCount > 0 && (
+                    <span className="grid size-5 place-items-center rounded-full bg-kurio-orange text-xs font-semibold text-kurio-bg">
+                      {activeFilterCount}
+                      <span className="sr-only"> ativos</span>
+                    </span>
+                  )}
+                </SheetTrigger>
               }
             />
 
@@ -151,7 +167,7 @@ export function HomePage() {
               {nftsData ? `${nftsData.total} NFTs encontrados` : ''}
             </p>
 
-            <div className="mt-[22px]">
+            <div className="mt-4 md:mt-[22px]">
               {nftsLoading ? (
                 <NFTGridSkeleton count={9} />
               ) : isError ? (
@@ -187,7 +203,8 @@ export function HomePage() {
                   <ul
                     aria-busy={isFetching}
                     className={cn(
-                      'grid grid-cols-2 gap-x-4 gap-y-10 transition-opacity md:grid-cols-3 md:gap-x-[34px] md:gap-y-16',
+                      // No mobile a coluna da direita fica desencontrada (layout em "masonry")
+                      'grid grid-cols-2 gap-x-4 gap-y-5 pb-[30px] transition-opacity max-md:[&>li:nth-child(even)]:translate-y-[30px] md:grid-cols-3 md:gap-x-[34px] md:gap-y-16 md:pb-0',
                       isFetching && 'opacity-60',
                     )}
                   >
@@ -209,6 +226,7 @@ export function HomePage() {
             </div>
           </div>
         </div>
+        </Sheet>
       </section>
 
       {/* Promo banners */}
@@ -221,5 +239,82 @@ export function HomePage() {
         <BlogSection />
       </div>
     </>
+  )
+}
+
+function MobileSearchBar({
+  query,
+  onSearch,
+  activeFilterCount,
+  onOpenFilters,
+}: {
+  query?: string
+  onSearch: (q: string | undefined) => void
+  activeFilterCount: number
+  onOpenFilters: () => void
+}) {
+  const [term, setTerm] = React.useState(query ?? '')
+  React.useEffect(() => setTerm(query ?? ''), [query])
+
+  return (
+    <div className="flex gap-2 font-mono">
+      <form
+        role="search"
+        className="flex h-11 min-w-0 flex-1 items-center gap-3 rounded-lg bg-kurio-surface px-3 focus-within:outline-2 focus-within:outline-kurio-orange"
+        onSubmit={(e) => {
+          e.preventDefault()
+          onSearch(term.trim() || undefined)
+          ;(document.activeElement as HTMLElement | null)?.blur()
+        }}
+      >
+        <SearchIcon size={18} className="shrink-0 text-kurio-sand" />
+        <label htmlFor="mobile-search" className="sr-only">
+          Explorar coleções
+        </label>
+        <input
+          id="mobile-search"
+          type="search"
+          enterKeyHint="search"
+          value={term}
+          onChange={(e) => setTerm(e.target.value)}
+          placeholder="Explorar coleções"
+          maxLength={80}
+          autoComplete="off"
+          className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-kurio-cream outline-none placeholder:text-kurio-muted [&::-webkit-search-cancel-button]:hidden"
+        />
+        {term && (
+          <button
+            type="button"
+            aria-label="Limpar busca"
+            onClick={() => {
+              setTerm('')
+              if (query) onSearch(undefined)
+            }}
+            className="-mr-1 grid size-8 shrink-0 place-items-center rounded-md text-kurio-sand"
+          >
+            <X size={16} aria-hidden />
+          </button>
+        )}
+      </form>
+
+      <button
+        type="button"
+        onClick={onOpenFilters}
+        aria-label={
+          activeFilterCount > 0 ? `Filtros e ordenação, ${activeFilterCount} ativos` : 'Filtros e ordenação'
+        }
+        className="relative grid size-11 shrink-0 place-items-center rounded-xl bg-gradient-to-b from-[#c98547] to-[#9a6438] text-kurio-bg"
+      >
+        <Settings2 size={20} strokeWidth={2.2} aria-hidden />
+        {activeFilterCount > 0 && (
+          <span
+            aria-hidden
+            className="absolute -top-1.5 -right-1.5 grid size-5 place-items-center rounded-full border-2 border-kurio-bg bg-kurio-cream text-[10px] font-bold text-kurio-bg"
+          >
+            {activeFilterCount}
+          </span>
+        )}
+      </button>
+    </div>
   )
 }
