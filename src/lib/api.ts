@@ -2,6 +2,8 @@ import axios from 'axios'
 
 export const api = axios.create({
   baseURL: '/api',
+  // Requisições sem resposta em 8s são abortadas (o pedido é reenviado com a mesma chave)
+  timeout: 8_000,
   headers: {
     'Content-Type': 'application/json',
   },

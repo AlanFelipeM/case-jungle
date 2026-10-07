@@ -25,7 +25,7 @@ function validCoupon(code: string | undefined) {
 // ─── Persistência ──────────────────────────────────────────────────────────
 
 /** Estado do carrinho do visitante, persistido para sobreviver a refresh */
-function readCart(): Cart {
+export function readCart(): Cart {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored) {
@@ -40,7 +40,7 @@ function readCart(): Cart {
   return { id: 'cart-guest', items: [], updatedAt: new Date(0).toISOString() }
 }
 
-function writeCart(cart: Cart) {
+export function writeCart(cart: Cart) {
   cart.updatedAt = new Date().toISOString()
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cart))
@@ -59,7 +59,7 @@ export function resetCart() {
 }
 
 /** Itens com os dados atuais do catálogo (REST reflete preço e disponibilidade vigentes) */
-function withCurrentData(cart: Cart): Cart {
+export function withCurrentData(cart: Cart): Cart {
   return {
     ...cart,
     items: cart.items.flatMap((item) => {
@@ -70,7 +70,7 @@ function withCurrentData(cart: Cart): Cart {
   }
 }
 
-function buildQuote(cart: Cart): Quote {
+export function buildQuote(cart: Cart): Quote {
   const lines: QuoteLine[] = withCurrentData(cart).items.map((item) => {
     const available = item.edition.available
     return {

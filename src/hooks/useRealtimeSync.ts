@@ -1,9 +1,10 @@
 import React from 'react'
 import { useQueryClient, type QueryClient } from '@tanstack/react-query'
-import type { Cart, NFT, NFTListResponse, NFTUpdatedEvent } from '@/types'
+import type { Cart, NFT, NFTListResponse, NFTUpdatedEvent, Order, OrderUpdatedEvent } from '@/types'
 import { getSocket } from '@/lib/realtime'
 import { nftKeys } from '@/hooks/useNFTs'
 import { cartKeys } from '@/hooks/useCart'
+import { checkoutKeys } from '@/hooks/useCheckout'
 
 const MAX_SEEN_EVENTS = 500
 
@@ -75,19 +76,38 @@ export function useRealtimeSync() {
       updateCaches(queryClient, event)
     }
 
+    const latestOrderVersion = new Map<string, number>()
+    const onOrderUpdated = (event: OrderUpdatedEvent) => {
+      if (seen.has(event.id) || event.version <= (latestOrderVersion.get(event.orderId) ?? 0)) return
+      seen.add(event.id)
+      latestOrderVersion.set(event.orderId, event.version)
+      const key = checkoutKeys.order(event.orderId)
+      const cached = queryClient.getQueryData<Order>(key)
+      // Estados terminais não regridem: só aplica versões mais novas que a do cache
+      if (cached && event.version > cached.version) {
+        queryClient.setQueryData<Order>(key, { ...cached, status: event.status, version: event.version })
+      }
+      // O recibo completo vem da API
+      queryClient.invalidateQueries({ queryKey: key })
+      if (event.status === 'confirmed') queryClient.invalidateQueries({ queryKey: cartKeys.all })
+    }
+
     // Eventos podem ter sido perdidos enquanto a conexão estava fora: busca o estado atual
     const onReconnect = () => {
       queryClient.invalidateQueries({ queryKey: ['nfts'] })
       queryClient.invalidateQueries({ queryKey: cartKeys.all })
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
     }
 
     getSocket().then((socket) => {
       if (cancelled) return
       socket.on('nft.updated', onNftUpdated)
+      socket.on('order.updated', onOrderUpdated)
       socket.io.on('reconnect', onReconnect)
       socket.connect()
       cleanup = () => {
         socket.off('nft.updated', onNftUpdated)
+        socket.off('order.updated', onOrderUpdated)
         socket.io.off('reconnect', onReconnect)
         socket.disconnect()
       }
