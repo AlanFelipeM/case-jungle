@@ -15,7 +15,7 @@ export function Layout({ children }: LayoutProps) {
   // Mobile: no detalhe e no carrinho, as barras de compra/resumo substituem a navegação inferior
   const pathname = useLocation({ select: (l) => l.pathname })
   const isDetail = pathname.startsWith('/nft/')
-  const showTabBar = !isDetail && pathname !== '/carrinho'
+  const showTabBar = !isDetail && pathname !== '/carrinho' && pathname !== '/pagamento'
 
   return (
     <div

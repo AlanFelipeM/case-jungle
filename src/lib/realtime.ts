@@ -1,11 +1,13 @@
 import type { Socket } from 'socket.io-client'
-import type { NFTUpdatedEvent } from '@/types'
+import type { NFTUpdatedEvent, OrderUpdatedEvent } from '@/types'
 
 /** Endereço do servidor de eventos (interceptado pelo MSW no ambiente de mocks) */
 export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? 'wss://realtime.kurio.app'
 
 export interface ServerToClientEvents {
   'nft.updated': (event: NFTUpdatedEvent) => void
+  'order.updated': (event: OrderUpdatedEvent) => void
+  'wallet.disconnected': (event: { sessionId: string }) => void
 }
 
 let socketPromise: Promise<Socket<ServerToClientEvents>> | null = null

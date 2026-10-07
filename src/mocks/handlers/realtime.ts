@@ -1,6 +1,6 @@
 import { ws } from 'msw'
 import { toSocketIo } from '@mswjs/socket.io-binding'
-import type { NFTUpdatedEvent } from '@/types'
+import type { NFTUpdatedEvent, Order, OrderUpdatedEvent } from '@/types'
 import { MOCK_NFTS } from '@/mocks/fixtures/nfts'
 import { SOCKET_URL } from '@/lib/realtime'
 
@@ -36,6 +36,30 @@ export interface NftUpdatePatch {
 
 function broadcast(event: NFTUpdatedEvent) {
   clients.forEach((_, io) => io.client.emit('nft.updated', event))
+}
+
+/** Emite "order.updated" com o estado atual do pedido */
+export function emitOrderUpdate(order: Order): OrderUpdatedEvent {
+  const event: OrderUpdatedEvent = {
+    id: crypto.randomUUID(),
+    resource: 'order',
+    orderId: order.id,
+    status: order.status,
+    version: order.version,
+    timestamp: new Date().toISOString(),
+  }
+  clients.forEach((_, io) => io.client.emit('order.updated', event))
+  return event
+}
+
+/** Avisa o cliente que a sessão da carteira foi encerrada */
+export function emitWalletDisconnected(sessionId: string) {
+  clients.forEach((_, io) => io.client.emit('wallet.disconnected', { sessionId }))
+}
+
+/** Reenvia um evento de pedido (duplicata/antigo) */
+export function replayOrderEvent(event: OrderUpdatedEvent) {
+  clients.forEach((_, io) => io.client.emit('order.updated', event))
 }
 
 /** Altera um NFT no mock e emite "nft.updated" para os clientes conectados */

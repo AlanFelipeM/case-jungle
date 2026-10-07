@@ -9,6 +9,8 @@ import { Layout } from '@/components/layout/Layout'
 import { HomePage } from '@/pages/HomePage'
 import { NftDetailPage } from '@/pages/NftDetailPage'
 import { CartPage } from '@/pages/CartPage'
+import { PaymentPage } from '@/pages/PaymentPage'
+import { OrderPage } from '@/pages/OrderPage'
 import { ComingSoonPage, NotFoundPage, UnavailablePage } from '@/pages/StatusPage'
 import { parseCatalogSearch } from '@/lib/catalogSearch'
 
@@ -69,13 +71,26 @@ const cartRoute = createRoute({
 const checkoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/pagamento',
-  component: () => <ComingSoonPage title="Pagamento" />,
+  // TODO: exigir autenticação (beforeLoad) quando o login existir
+  component: PaymentPage,
+})
+
+const orderRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/pedido/$orderId',
+  component: OrderPage,
 })
 
 const profileRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/perfil',
   component: () => <ComingSoonPage title="Meu perfil" />,
+})
+
+const walletsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/carteiras',
+  component: () => <ComingSoonPage title="Carteiras" />,
 })
 
 const favoritesRoute = createRoute({
@@ -99,8 +114,10 @@ const routeTree = rootRoute.addChildren([
   loginRoute,
   cartRoute,
   checkoutRoute,
+  orderRoute,
   profileRoute,
   favoritesRoute,
+  walletsRoute,
   unavailable('/criadores', 'Criadores'),
   unavailable('/aprenda', 'Aprenda'),
   unavailable('/blog/$slug', 'Diário da Cunhagem'),

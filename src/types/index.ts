@@ -213,24 +213,96 @@ export interface Quote {
   expiresAt: string
 }
 
+export type OrderStatus = 'pending' | 'confirmed' | 'rejected'
+
+/** Snapshot do item no momento do pedido (o recibo não muda com o catálogo) */
+export interface OrderItem {
+  itemId: string
+  nftId: string
+  editionId: string
+  name: string
+  image: string
+  tokenId: string
+  editionLabel: string
+  quantity: number
+  unitPrice: string
+  total: string
+}
+
 export interface Order {
   id: string
   idempotencyKey: string
-  status: 'pending' | 'confirmed' | 'rejected'
-  items: CartItem[]
-  quote: Quote
+  status: OrderStatus
+  items: OrderItem[]
+  subtotal: string
+  discount: string
+  networkFee: string
+  total: string
+  couponCode?: string
+  collector: CheckoutCollector
+  wallet: CheckoutWallet
+  /** Referência simulada da transação (hash) */
   transactionRef: string
+  failureReason?: string
+  version: number
   createdAt: string
   updatedAt: string
+}
+
+// ─── Checkout ──────────────────────────────────────────────────────────────
+export type WalletConnector = 'walletconnect' | 'metamask' | 'coinbase'
+export type Network = 'ethereum' | 'polygon' | 'solana'
+
+export interface CollectorProfile {
+  displayName: string
+  username: string
+  profileName: string
+  email: string
+  ensName: string
+}
+
+export interface CheckoutCollector extends CollectorProfile {
+  referralCode: string
+  note?: string
+}
+
+export interface CheckoutWallet {
+  /** Carteira cadastrada usada (quando não é informada manualmente) */
+  walletId?: string
+  address: string
+  network: Network
+  connector: WalletConnector
+  secondary?: string
+}
+
+export interface WalletSession {
+  id: string
+  connector: WalletConnector
+  address: string
+  network: Network
+  connectedAt: string
+}
+
+export interface CreateOrderPayload {
+  items: { itemId: string; quantity: number; unitPrice: string }[]
+  couponCode?: string
+  /** Total que o colecionador revisou; diferente do atual → 409 QUOTE_CHANGED */
+  expectedTotal: string
+  collector: CheckoutCollector
+  wallet: CheckoutWallet
+  walletSessionId: string
 }
 
 // ─── Wallet ────────────────────────────────────────────────────────────────
 export interface Wallet {
   id: string
   address: string
-  network: 'ethereum' | 'polygon' | 'solana'
+  network: Network
   isPrimary: boolean
   label?: string
+  /** Nome ENS associado (ex.: nova.kurio.eth) */
+  ens?: string
+  connector: WalletConnector
 }
 
 // ─── Socket Events ─────────────────────────────────────────────────────────

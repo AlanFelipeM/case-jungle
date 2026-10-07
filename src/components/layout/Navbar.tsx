@@ -49,7 +49,7 @@ export function Navbar() {
               {NAV_LINKS.map((link) => {
                 const isActive =
                   location.pathname === link.href ||
-                  (link.href === '/mercado' && (location.pathname.startsWith('/nft/') || location.pathname === '/carrinho'))
+                  (link.href === '/mercado' && (location.pathname.startsWith('/nft/') || ['/carrinho', '/pagamento'].includes(location.pathname)))
                 return (
                   <li key={link.href} className="flex">
                     <Link
@@ -137,7 +137,7 @@ export function Navbar() {
             {NAV_LINKS.map((link) => {
               const isActive =
                   location.pathname === link.href ||
-                  (link.href === '/mercado' && (location.pathname.startsWith('/nft/') || location.pathname === '/carrinho'))
+                  (link.href === '/mercado' && (location.pathname.startsWith('/nft/') || ['/carrinho', '/pagamento'].includes(location.pathname)))
               return (
                 <li key={link.href}>
                   <Link

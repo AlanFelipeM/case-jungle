@@ -89,7 +89,7 @@ function Row({ label, value }: { label: string; value: string }) {
   )
 }
 
-function CouponForm({ quote, sheet }: { quote: Quote | undefined; sheet: boolean }) {
+export function CouponForm({ quote, sheet }: { quote: Quote | undefined; sheet: boolean }) {
   const apply = useApplyCoupon()
   const remove = useRemoveCoupon()
   const [code, setCode] = React.useState('')
