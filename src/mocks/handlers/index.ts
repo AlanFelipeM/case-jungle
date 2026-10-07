@@ -1,5 +1,6 @@
 import { failureHandlers } from './failures'
 import { authHandlers } from './auth'
+import { accountHandlers } from './account'
 import { nftHandlers } from './nfts'
 import { cartHandlers } from './cart'
 import { checkoutHandlers } from './checkout'
@@ -9,6 +10,7 @@ import { realtimeHandlers } from './realtime'
 export const handlers = [
   ...failureHandlers,
   ...authHandlers,
+  ...accountHandlers,
   ...nftHandlers,
   ...cartHandlers,
   ...checkoutHandlers,

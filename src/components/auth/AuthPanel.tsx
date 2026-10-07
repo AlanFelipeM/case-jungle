@@ -46,6 +46,9 @@ function validate(mode: AuthMode, f: Fields): FieldErrors {
 
 const ORDER: (keyof Fields)[] = ['username', 'email', 'password', 'confirm']
 
+/** Credenciais fictícias documentadas (preenche o formulário; o login continua validado pela API) */
+const DEMO_ACCOUNT = { email: 'nova@kurio.app', password: 'Kurio@123' }
+
 export function AuthPanel({ mode, onModeChange, onSuccess, variant, notice, TitleComponent = 'h1' }: AuthPanelProps) {
   const login = useLogin()
   const register = useRegister()
@@ -223,6 +226,22 @@ export function AuthPanel({ mode, onModeChange, onSuccess, variant, notice, Titl
         >
           {pending ? 'Aguarde…' : mode === 'login' ? 'Entrar' : page ? 'Criar perfil' : 'Criar conta'}
         </button>
+        {mode === 'login' && (
+          <p className="mt-3 text-center text-xs text-kurio-sand">
+            Conta de demonstração ·{' '}
+            <button
+              type="button"
+              onClick={() => {
+                setFields((f) => ({ ...f, email: DEMO_ACCOUNT.email, password: DEMO_ACCOUNT.password }))
+                setErrors({})
+                setFormError(null)
+              }}
+              className="font-semibold text-kurio-orange-light underline-offset-2 hover:underline"
+            >
+              Usar
+            </button>
+          </p>
+        )}
       </form>
 
       <div className={cn('relative text-center text-[13px]', page ? 'mx-auto mt-10 max-w-[400px]' : 'mt-8')}>

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link, useLocation } from '@tanstack/react-router'
-import { LogOut, Menu, X } from 'lucide-react'
-import { CartIcon } from '@/components/icons'
+import { Menu, X } from 'lucide-react'
+import { CartIcon, LogoutIcon } from '@/components/icons'
 import { cn } from '@/lib/utils'
 import { useCartCount } from '@/hooks/useCart'
 import { SearchDialog } from './SearchDialog'
@@ -117,7 +117,7 @@ export function Navbar() {
                 aria-haspopup="dialog"
                 className="ml-7 inline-flex h-[35px] w-[100px] items-center justify-center gap-1 rounded-[4px] bg-kurio-orange text-base font-medium text-kurio-bg transition-colors hover:bg-kurio-orange-hover"
               >
-                <LogOut size={20} strokeWidth={2} aria-hidden />
+                <LogoutIcon size={20} />
                 Entrar
               </button>
             )}

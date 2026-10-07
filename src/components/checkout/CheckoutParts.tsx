@@ -208,7 +208,7 @@ export function RegisteredWallets({
                 </span>
               </label>
               <Link
-                to="/carteiras"
+                to="/perfil/carteiras"
                 aria-label={`Gerenciar carteira ${wallet.label}`}
                 className="mr-2 grid size-9 place-items-center rounded-md text-kurio-sand hover:text-kurio-orange-light"
               >

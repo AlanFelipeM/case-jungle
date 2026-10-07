@@ -166,22 +166,6 @@ function validateWallet(wallet: CheckoutWallet | undefined): Record<string, stri
 // ─── Handlers ──────────────────────────────────────────────────────────────
 
 export const checkoutHandlers = [
-  // GET /api/profile — dados do colecionador
-  http.get(`${BASE}/profile`, async ({ request }) => {
-    const user = await requireUser(request)
-    if (user instanceof Response) return user
-    await delay(150)
-    return HttpResponse.json(user.profile)
-  }),
-
-  // GET /api/wallets — carteiras cadastradas
-  http.get(`${BASE}/wallets`, async ({ request }) => {
-    const user = await requireUser(request)
-    if (user instanceof Response) return user
-    await delay(150)
-    return HttpResponse.json(user.wallets)
-  }),
-
   // POST /api/wallet/connect — simula a aprovação (ou recusa) na carteira
   http.post(`${BASE}/wallet/connect`, async ({ request }) => {
     const user = await requireUser(request)
