@@ -8,11 +8,11 @@ import type {
   OrderItem,
   WalletSession,
 } from '@/types'
-import { DEMO_PROFILE, DEMO_WALLETS } from '@/mocks/fixtures/account'
 import { MOCK_NFTS } from '@/mocks/fixtures/nfts'
 import { getScenario } from '@/mocks/scenarios'
 import { buildQuote, readCart, withCurrentData, writeCart } from './cart'
 import { emitNftUpdate, emitOrderUpdate, emitWalletDisconnected } from './realtime'
+import { requireUser } from './auth'
 import { compareEth } from '@/lib/eth'
 import { ENS_NAME_PATTERN, stableStringify } from '@/lib/checkout'
 
@@ -34,6 +34,8 @@ export function isValidAddress(address: string, network: Network) {
 // ─── Pedidos (persistidos para recuperação após refresh) ───────────────────
 
 interface StoredOrder extends Order {
+  /** Dono do pedido: só ele consulta o pedido e recebe os eventos */
+  userId: string
   payloadHash: string
   outcome: 'confirm' | 'reject'
   resolvesAt: number
@@ -72,7 +74,7 @@ export function resetOrders() {
 }
 
 function publicOrder(order: StoredOrder): Order {
-  const { payloadHash: _hash, outcome: _outcome, resolvesAt: _resolvesAt, ...rest } = order
+  const { payloadHash: _hash, outcome: _outcome, resolvesAt: _resolvesAt, userId: _userId, ...rest } = order
   return rest
 }
 
@@ -94,7 +96,7 @@ function finalize(orderId: string): Order | undefined {
         emitNftUpdate(item.nftId, { editions: { [item.editionId]: Math.max(edition.available - item.quantity, 0) } })
       }
     }
-    const cart = readCart()
+    const cart = readCart(order.userId)
     cart.items = cart.items
       .map((ci) => {
         const bought = order.items.find((i) => i.itemId === ci.id)
@@ -102,7 +104,7 @@ function finalize(orderId: string): Order | undefined {
       })
       .filter((ci) => ci.quantity > 0)
     if (!cart.items.length) delete cart.couponCode
-    writeCart(cart)
+    writeCart(cart, order.userId)
     order.status = 'confirmed'
   } else {
     order.status = 'rejected'
@@ -112,7 +114,7 @@ function finalize(orderId: string): Order | undefined {
   order.updatedAt = new Date().toISOString()
   writeStore(store)
   const result = publicOrder(order)
-  emitOrderUpdate(result)
+  emitOrderUpdate(result, order.userId)
   return result
 }
 
@@ -165,19 +167,25 @@ function validateWallet(wallet: CheckoutWallet | undefined): Record<string, stri
 
 export const checkoutHandlers = [
   // GET /api/profile — dados do colecionador
-  http.get(`${BASE}/profile`, async () => {
+  http.get(`${BASE}/profile`, async ({ request }) => {
+    const user = await requireUser(request)
+    if (user instanceof Response) return user
     await delay(150)
-    return HttpResponse.json(DEMO_PROFILE)
+    return HttpResponse.json(user.profile)
   }),
 
   // GET /api/wallets — carteiras cadastradas
-  http.get(`${BASE}/wallets`, async () => {
+  http.get(`${BASE}/wallets`, async ({ request }) => {
+    const user = await requireUser(request)
+    if (user instanceof Response) return user
     await delay(150)
-    return HttpResponse.json(DEMO_WALLETS)
+    return HttpResponse.json(user.wallets)
   }),
 
   // POST /api/wallet/connect — simula a aprovação (ou recusa) na carteira
   http.post(`${BASE}/wallet/connect`, async ({ request }) => {
+    const user = await requireUser(request)
+    if (user instanceof Response) return user
     const body = (await request.json()) as Partial<WalletSession>
     await delay(1_200)
     if (!body.connector || !body.network || !body.address || !isValidAddress(body.address, body.network)) {
@@ -208,6 +216,8 @@ export const checkoutHandlers = [
   http.post(`${BASE}/orders`, async ({ request }) => {
     const key = request.headers.get('Idempotency-Key')
     if (!key) return error(422, 'IDEMPOTENCY_KEY_REQUIRED', 'Chave de idempotência obrigatória.')
+    const user = await requireUser(request)
+    if (user instanceof Response) return user
     const payload = (await request.json()) as CreateOrderPayload
     const { walletSessionId, ...content } = payload
     const payloadHash = stableStringify(content)
@@ -217,7 +227,7 @@ export const checkoutHandlers = [
     const existingId = store.keys[key]
     if (existingId) {
       const existing = store.orders[existingId]
-      if (existing.payloadHash !== payloadHash) {
+      if (existing.userId !== user.id || existing.payloadHash !== payloadHash) {
         return error(409, 'IDEMPOTENCY_CONFLICT', 'Esta chave já foi usada em um pedido diferente.')
       }
       await delay(200)
@@ -234,8 +244,8 @@ export const checkoutHandlers = [
     }
 
     // Revalidação: itens, preços, disponibilidade, cupom e total
-    const cart = withCurrentData(readCart())
-    const quote = buildQuote(readCart())
+    const cart = withCurrentData(readCart(user.id))
+    const quote = buildQuote(readCart(user.id))
     const sameItems =
       cart.items.length === payload.items.length &&
       payload.items.every((p) => {
@@ -267,6 +277,7 @@ export const checkoutHandlers = [
       total: quote.lines.find((l) => l.itemId === item.id)!.total,
     }))
     const order: StoredOrder = {
+      userId: user.id,
       id: `ord-${randomHex(5)}`,
       idempotencyKey: key,
       status: 'pending',
@@ -297,8 +308,12 @@ export const checkoutHandlers = [
   }),
 
   // GET /api/orders/:id — estado e recibo do pedido
-  http.get(`${BASE}/orders/:id`, async ({ params }) => {
+  http.get(`${BASE}/orders/:id`, async ({ request, params }) => {
+    const user = await requireUser(request)
+    if (user instanceof Response) return user
     await delay(150)
+    // Pedido de outro usuário é tratado como inexistente
+    if (readStore().orders[String(params.id)]?.userId !== user.id) return error(404, 'NOT_FOUND', 'Pedido não encontrado.')
     const order = finalize(String(params.id))
     if (!order) return error(404, 'NOT_FOUND', 'Pedido não encontrado.')
     return HttpResponse.json(order)

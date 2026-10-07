@@ -1,5 +1,7 @@
 import React from 'react'
-import { Link, useLocation, useNavigate } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
+import { useFavorite } from '@/hooks/useFavorites'
+import { useAuthPrompt } from '@/components/auth/AuthProvider'
 import { Heart } from 'lucide-react'
 import type { NFT } from '@/types'
 import { cn } from '@/lib/utils'
@@ -13,14 +15,9 @@ interface NFTCardProps {
 
 export function NFTCard({ nft, className, compact = false }: NFTCardProps) {
   const [imgLoaded, setImgLoaded] = React.useState(false)
-  const navigate = useNavigate()
-  const location = useLocation()
-
-  // Favoritos exigem autenticação: o visitante vai ao login e volta para cá depois
-  // TODO: com a sessão implementada, alternar o favorito via API (atualização otimista)
-  function onFavorite() {
-    navigate({ to: '/login', search: { redirect: location.href } })
-  }
+  const { openAuth } = useAuthPrompt()
+  // Favoritos exigem autenticação; com sessão, alterna de forma otimista
+  const favorite = useFavorite(nft, () => openAuth())
 
   const { isRare } = nft
 
@@ -56,15 +53,17 @@ export function NFTCard({ nft, className, compact = false }: NFTCardProps) {
           {/* Favoritar: sempre visível no toque; no desktop aparece no hover e no foco */}
           <button
             type="button"
-            onClick={onFavorite}
-            aria-label={`Favoritar ${nft.name} (requer login)`}
+            onClick={favorite.toggle}
+            aria-label={favorite.label}
+            aria-pressed={favorite.isFavorite}
             className={cn(
               'absolute top-2 right-2 z-10 grid size-7 place-items-center rounded-full bg-[#2e1c15] text-kurio-orange-light transition-opacity',
               'md:size-9 md:bg-kurio-bg/75 md:text-kurio-cream md:opacity-0 md:backdrop-blur-sm',
               'hover:text-kurio-orange-light focus-visible:opacity-100 md:group-hover:opacity-100',
+              favorite.isFavorite && 'md:text-kurio-orange-light md:opacity-100',
             )}
           >
-            <Heart size={14} aria-hidden className="md:size-4" />
+            <Heart size={14} aria-hidden className="md:size-4" fill={favorite.isFavorite ? 'currentColor' : 'none'} />
           </button>
         </div>
       </div>

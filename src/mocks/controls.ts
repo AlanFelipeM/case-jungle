@@ -2,6 +2,7 @@ import { dropConnections, emitNftUpdate, replayEvent, replayOrderEvent } from '.
 import { failNext } from './handlers/failures'
 import { resetCart } from './handlers/cart'
 import { disconnectWallets, resetOrders } from './handlers/checkout'
+import { expireSessions, resetAuth } from './auth'
 import { getScenario, resetScenario, setScenario } from './scenarios'
 
 /**
@@ -9,6 +10,7 @@ import { getScenario, resetScenario, setScenario } from './scenarios'
  * Ex.: __kurioMock.emitNftUpdate('nft-001', { price: '1.35', editions: { '1/50': 1 } })
  *      __kurioMock.failNext('PATCH', '/api/cart/items', 503)
  *      __kurioMock.setScenario({ payment: 'reject' })
+ *      __kurioMock.expireSession()
  */
 export const mockControls = {
   // tempo real
@@ -21,6 +23,8 @@ export const mockControls = {
   getScenario,
   setScenario,
   disconnectWallets,
+  /** Expira a sessão atual: a próxima requisição autenticada recebe 401 */
+  expireSession: expireSessions,
   // reset do cenário conhecido
   resetCart,
   resetOrders,
@@ -29,5 +33,6 @@ export const mockControls = {
     resetCart()
     resetOrders()
     resetScenario()
+    resetAuth()
   },
 }

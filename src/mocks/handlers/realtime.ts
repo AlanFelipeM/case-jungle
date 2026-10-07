@@ -3,6 +3,7 @@ import { toSocketIo } from '@mswjs/socket.io-binding'
 import type { NFTUpdatedEvent, Order, OrderUpdatedEvent } from '@/types'
 import { MOCK_NFTS } from '@/mocks/fixtures/nfts'
 import { SOCKET_URL } from '@/lib/realtime'
+import { authenticate } from '@/mocks/auth'
 
 /*
  * Servidor Socket.IO simulado pelo MSW (@mswjs/socket.io-binding).
@@ -11,7 +12,8 @@ import { SOCKET_URL } from '@/lib/realtime'
 const realtime = ws.link(`${SOCKET_URL}/*`)
 
 type Client = ReturnType<typeof toSocketIo>
-const clients = new Map<Client, { close: () => void }>()
+/** Conexões abertas; token/usuário vêm da query do handshake (?token=) */
+const clients = new Map<Client, { close: () => void; token: string | null; userId: string | null }>()
 
 // Engine.IO: o servidor envia "ping" periodicamente; sem ele o cliente reconecta por timeout
 const PING_INTERVAL = 20_000
@@ -20,7 +22,13 @@ export const realtimeHandlers = [
   realtime.addEventListener('connection', (connection) => {
     const io = toSocketIo(connection)
     const ping = setInterval(() => connection.client.send('2'), PING_INTERVAL)
-    clients.set(io, { close: () => connection.client.close() })
+    const token = connection.client.url.searchParams.get('token')
+    const meta = { close: () => connection.client.close(), token, userId: null as string | null }
+    clients.set(io, meta)
+    // Eventos privados (pedidos) só vão para o dono da sessão
+    authenticate(token).then((auth) => {
+      if (auth.status === 'authenticated') meta.userId = auth.user.id
+    })
     connection.client.addEventListener('close', () => {
       clearInterval(ping)
       clients.delete(io)
@@ -38,8 +46,13 @@ function broadcast(event: NFTUpdatedEvent) {
   clients.forEach((_, io) => io.client.emit('nft.updated', event))
 }
 
-/** Emite "order.updated" com o estado atual do pedido */
-export function emitOrderUpdate(order: Order): OrderUpdatedEvent {
+/** Encerra as conexões de uma sessão (logout) */
+export function disconnectUserSockets(token: string) {
+  clients.forEach((meta) => meta.token === token && meta.close())
+}
+
+/** Emite "order.updated" apenas para as conexões do dono do pedido */
+export function emitOrderUpdate(order: Order, userId: string): OrderUpdatedEvent {
   const event: OrderUpdatedEvent = {
     id: crypto.randomUUID(),
     resource: 'order',
@@ -48,7 +61,7 @@ export function emitOrderUpdate(order: Order): OrderUpdatedEvent {
     version: order.version,
     timestamp: new Date().toISOString(),
   }
-  clients.forEach((_, io) => io.client.emit('order.updated', event))
+  clients.forEach((meta, io) => meta.userId === userId && io.client.emit('order.updated', event))
   return event
 }
 
@@ -57,9 +70,9 @@ export function emitWalletDisconnected(sessionId: string) {
   clients.forEach((_, io) => io.client.emit('wallet.disconnected', { sessionId }))
 }
 
-/** Reenvia um evento de pedido (duplicata/antigo) */
+/** Reenvia um evento de pedido (duplicata/antigo) para as conexões autenticadas */
 export function replayOrderEvent(event: OrderUpdatedEvent) {
-  clients.forEach((_, io) => io.client.emit('order.updated', event))
+  clients.forEach((meta, io) => meta.userId && io.client.emit('order.updated', event))
 }
 
 /** Altera um NFT no mock e emite "nft.updated" para os clientes conectados */

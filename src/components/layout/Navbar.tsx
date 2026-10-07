@@ -5,6 +5,9 @@ import { CartIcon } from '@/components/icons'
 import { cn } from '@/lib/utils'
 import { useCartCount } from '@/hooks/useCart'
 import { SearchDialog } from './SearchDialog'
+import { UserMenu } from './UserMenu'
+import { useSession } from '@/hooks/useAuth'
+import { useAuthPrompt } from '@/components/auth/AuthProvider'
 
 const NAV_LINKS = [
   { label: 'Início', href: '/' },
@@ -17,8 +20,8 @@ export function Navbar() {
   const [menuOpen, setMenuOpen] = React.useState(false)
   const location = useLocation()
   const cartCount = useCartCount()
-  // Após o login, o usuário volta para onde estava
-  const loginSearch = { redirect: location.pathname === '/login' ? undefined : location.href }
+  const { user, isLoading: sessionLoading } = useSession()
+  const { openAuth } = useAuthPrompt()
 
   // Fecha o menu mobile ao navegar ou ao pressionar Escape
   React.useEffect(() => setMenuOpen(false), [location.pathname])
@@ -102,14 +105,22 @@ export function Navbar() {
               </Link>
             </div>
 
-            <Link
-              to="/login"
-              search={loginSearch}
-              className="ml-7 hidden h-[35px] w-[100px] items-center justify-center gap-1 rounded-[4px] bg-kurio-orange text-base font-medium text-kurio-bg transition-colors hover:bg-kurio-orange-hover md:inline-flex"
-            >
-              <LogOut size={20} strokeWidth={2} aria-hidden />
-              Entrar
-            </Link>
+            {/* Conta: nome e avatar quando há sessão; senão "Entrar" (abre o modal) */}
+            {sessionLoading ? (
+              <span aria-hidden className="skeleton ml-7 size-8 rounded-full" />
+            ) : user ? (
+              <UserMenu user={user} />
+            ) : (
+              <button
+                type="button"
+                onClick={() => openAuth()}
+                aria-haspopup="dialog"
+                className="ml-7 inline-flex h-[35px] w-[100px] items-center justify-center gap-1 rounded-[4px] bg-kurio-orange text-base font-medium text-kurio-bg transition-colors hover:bg-kurio-orange-hover"
+              >
+                <LogOut size={20} strokeWidth={2} aria-hidden />
+                Entrar
+              </button>
+            )}
 
             {/* Mobile menu toggle */}
             <button
@@ -156,16 +167,6 @@ export function Navbar() {
                 </li>
               )
             })}
-            <li className="mt-4 md:hidden">
-              <Link
-                to="/login"
-                search={loginSearch}
-                className="inline-flex h-[35px] items-center gap-1.5 rounded-[4px] bg-kurio-orange px-2.5 text-base font-medium text-kurio-bg transition-colors hover:bg-kurio-orange-hover"
-              >
-                <LogOut size={20} strokeWidth={2} aria-hidden />
-                Entrar
-              </Link>
-            </li>
           </ul>
         </nav>
       )}

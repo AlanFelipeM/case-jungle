@@ -10,6 +10,8 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { CartCards, CartTable } from '@/components/cart/CartItems'
 import { CartSummary } from '@/components/cart/CartSummary'
 import { NftCarousel } from '@/components/nft/NftCarousel'
+import { useSession } from '@/hooks/useAuth'
+import { useAuthPrompt } from '@/components/auth/AuthProvider'
 
 const PAGE = 'mx-auto max-w-[1440px] px-5 pt-5 font-mono text-kurio-cream md:px-6 md:pt-7'
 
@@ -20,6 +22,8 @@ export function CartPage() {
   const quoteQuery = useCartQuote(items.length > 0)
   const quote = items.length > 0 ? quoteQuery.data : undefined
   const itemMutation = useCartItemMutation()
+  const { isAuthenticated } = useSession()
+  const { openAuth } = useAuthPrompt()
 
   React.useEffect(() => {
     document.title = 'Carrinho — Kurio'
@@ -47,7 +51,8 @@ export function CartPage() {
     updating,
     checkoutDisabled,
     checkoutHint,
-    onCheckout: () => navigate({ to: '/pagamento' }),
+    // Pagamento exige login: sem sessão, entra e segue para o pagamento
+    onCheckout: () => (isAuthenticated ? navigate({ to: '/pagamento' }) : openAuth({ redirect: '/pagamento' })),
   }
 
   return (

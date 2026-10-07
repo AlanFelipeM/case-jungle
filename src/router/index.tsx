@@ -14,6 +14,23 @@ import { OrderPage } from '@/pages/OrderPage'
 import { ExplorerPage } from '@/pages/ExplorerPage'
 import { ComingSoonPage, NotFoundPage, UnavailablePage } from '@/pages/StatusPage'
 import { parseCatalogSearch } from '@/lib/catalogSearch'
+import { AuthPage } from '@/pages/AuthPage'
+import { getToken } from '@/lib/session'
+
+/** Parâmetros de /login e /cadastro: retorno ao fluxo anterior e motivo */
+const authSearch = (raw: Record<string, unknown>): { redirect?: string; reason?: 'expired' } => ({
+  // Apenas caminhos internos, para evitar open redirect
+  redirect:
+    typeof raw.redirect === 'string' && raw.redirect.startsWith('/') && !raw.redirect.startsWith('//')
+      ? raw.redirect
+      : undefined,
+  reason: raw.reason === 'expired' ? 'expired' : undefined,
+})
+
+/** Telas privadas: sem sessão, vai ao login e volta depois */
+const requireAuth = ({ location }: { location: { href: string } }) => {
+  if (!getToken()) throw redirect({ to: '/login', search: { redirect: location.href } })
+}
 
 // Root route with shared layout
 const rootRoute = createRootRoute({
@@ -53,14 +70,15 @@ const nftDetailRoute = createRoute({
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/login',
-  validateSearch: (raw: Record<string, unknown>): { redirect?: string } => ({
-    // Apenas caminhos internos, para evitar open redirect
-    redirect:
-      typeof raw.redirect === 'string' && raw.redirect.startsWith('/') && !raw.redirect.startsWith('//')
-        ? raw.redirect
-        : undefined,
-  }),
-  component: () => <ComingSoonPage title="Entrar" />,
+  validateSearch: authSearch,
+  component: () => <AuthPage mode="login" />,
+})
+
+const registerRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/cadastro',
+  validateSearch: authSearch,
+  component: () => <AuthPage mode="register" />,
 })
 
 const cartRoute = createRoute({
@@ -72,7 +90,7 @@ const cartRoute = createRoute({
 const checkoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/pagamento',
-  // TODO: exigir autenticação (beforeLoad) quando o login existir
+  beforeLoad: requireAuth,
   component: PaymentPage,
 })
 
@@ -89,24 +107,28 @@ const explorerRoute = createRoute({
 const orderRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/pedido/$orderId',
+  beforeLoad: requireAuth,
   component: OrderPage,
 })
 
 const profileRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/perfil',
+  beforeLoad: requireAuth,
   component: () => <ComingSoonPage title="Meu perfil" />,
 })
 
 const walletsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/carteiras',
+  beforeLoad: requireAuth,
   component: () => <ComingSoonPage title="Carteiras" />,
 })
 
 const favoritesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/favoritos',
+  beforeLoad: requireAuth,
   component: () => <ComingSoonPage title="Lista de interesse" />,
 })
 
@@ -123,6 +145,7 @@ const routeTree = rootRoute.addChildren([
   mercadoRoute,
   nftDetailRoute,
   loginRoute,
+  registerRoute,
   cartRoute,
   checkoutRoute,
   orderRoute,
