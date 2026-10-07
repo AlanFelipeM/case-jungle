@@ -11,6 +11,7 @@ import { NftDetailPage } from '@/pages/NftDetailPage'
 import { CartPage } from '@/pages/CartPage'
 import { PaymentPage } from '@/pages/PaymentPage'
 import { OrderPage } from '@/pages/OrderPage'
+import { ExplorerPage } from '@/pages/ExplorerPage'
 import { ComingSoonPage, NotFoundPage, UnavailablePage } from '@/pages/StatusPage'
 import { parseCatalogSearch } from '@/lib/catalogSearch'
 
@@ -75,6 +76,16 @@ const checkoutRoute = createRoute({
   component: PaymentPage,
 })
 
+// Explorador de blocos simulado (links de exploração do recibo)
+const explorerRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/explorador/tx/$hash',
+  validateSearch: (raw: Record<string, unknown>): { pedido?: string } => ({
+    pedido: typeof raw.pedido === 'string' ? raw.pedido : undefined,
+  }),
+  component: ExplorerPage,
+})
+
 const orderRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/pedido/$orderId',
@@ -115,6 +126,7 @@ const routeTree = rootRoute.addChildren([
   cartRoute,
   checkoutRoute,
   orderRoute,
+  explorerRoute,
   profileRoute,
   favoritesRoute,
   walletsRoute,
