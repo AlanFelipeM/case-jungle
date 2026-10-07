@@ -166,11 +166,14 @@ export interface AuthResponse {
 
 // ─── Cart ──────────────────────────────────────────────────────────────────
 export interface CartItem {
+  /** Identidade do item: `${nftId}:${editionId}` */
+  id: string
   nftId: string
   editionId: string
   quantity: number
   nft: NFT
   edition: NFTEdition
+  /** Preço confirmado pelo colecionador; diferente de nft.price quando o preço mudou */
   priceSnapshot: string
 }
 
@@ -182,12 +185,31 @@ export interface Cart {
 }
 
 // ─── Quote / Order ─────────────────────────────────────────────────────────
+/** Cotação de uma linha do carrinho, sempre com o preço atual */
+export interface QuoteLine {
+  itemId: string
+  unitPrice: string
+  quantity: number
+  total: string
+  /** Preço que o colecionador viu ao adicionar/confirmar */
+  previousPrice: string
+  priceChanged: boolean
+  /** Unidades disponíveis (null em edição aberta) */
+  available: number | null
+  /** Quantidade no carrinho maior que a disponível */
+  exceedsAvailability: boolean
+}
+
 export interface Quote {
+  lines: QuoteLine[]
   subtotal: string
   discount: string
   networkFee: string
   total: string
+  coupon: { code: string; percent: number } | null
   couponValid: boolean
+  /** Há mudanças de preço não confirmadas ou itens indisponíveis */
+  hasIssues: boolean
   expiresAt: string
 }
 
