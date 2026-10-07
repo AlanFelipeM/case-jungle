@@ -16,6 +16,8 @@ async function bootstrap() {
         url: '/mockServiceWorker.js',
       },
     })
+    const { mockControls } = await import('@/mocks/controls')
+    window.__kurioMock = mockControls
   }
 
   const queryClient = new QueryClient({

@@ -1,9 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/api'
+import { getErrorStatus } from '@/lib/apiError'
 import type {
   NFT,
   NFTListParams,
   NFTListResponse,
+  NFTReviewsResponse,
   FeaturedBanner,
   BlogPost,
 } from '@/types'
@@ -13,6 +15,8 @@ export const nftKeys = {
   all: ['nfts'] as const,
   list: (params: NFTListParams) => ['nfts', 'list', params] as const,
   detail: (id: string) => ['nfts', 'detail', id] as const,
+  reviews: (id: string) => ['nfts', 'detail', id, 'reviews'] as const,
+  collection: (collectionId: string) => ['nfts', 'collection', collectionId] as const,
   featured: ['nfts', 'featured'] as const,
   banners: ['banners'] as const,
   blog: ['blog'] as const,
@@ -48,6 +52,36 @@ export function useNFT(id: string) {
     },
     staleTime: 60_000,
     enabled: !!id,
+    // NFT inexistente (404) não é falha transitória: não repete
+    retry: (failureCount, error) => getErrorStatus(error) !== 404 && failureCount < 2,
+  })
+}
+
+export function useNFTReviews(id: string, enabled = true) {
+  return useQuery({
+    queryKey: nftKeys.reviews(id),
+    queryFn: async ({ signal }) => {
+      const { data } = await api.get<NFTReviewsResponse>(`/nfts/${id}/reviews`, { signal })
+      return data
+    },
+    staleTime: 60_000,
+    enabled: enabled && !!id,
+  })
+}
+
+/** NFTs da mesma coleção (até 16), para o carrossel do detalhe */
+export function useCollectionNFTs(collectionId: string | undefined) {
+  return useQuery({
+    queryKey: nftKeys.collection(collectionId ?? ''),
+    queryFn: async ({ signal }) => {
+      const { data } = await api.get<NFTListResponse>('/nfts', {
+        params: { collection: collectionId, limit: 16 },
+        signal,
+      })
+      return data.data
+    },
+    staleTime: 60_000,
+    enabled: !!collectionId,
   })
 }
 

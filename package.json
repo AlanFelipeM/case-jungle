@@ -36,6 +36,7 @@
     "tailwind-merge": "^3.3.0"
   },
   "devDependencies": {
+    "@mswjs/socket.io-binding": "^0.2.0",
     "@playwright/test": "^1.52.0",
     "@tailwindcss/vite": "^4.1.6",
     "@types/react": "^19.1.2",

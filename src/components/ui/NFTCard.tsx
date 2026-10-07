@@ -7,9 +7,11 @@ import { cn } from '@/lib/utils'
 interface NFTCardProps {
   nft: NFT
   className?: string
+  /** Variante com textos menores (carrosséis) */
+  compact?: boolean
 }
 
-export function NFTCard({ nft, className }: NFTCardProps) {
+export function NFTCard({ nft, className, compact = false }: NFTCardProps) {
   const [imgLoaded, setImgLoaded] = React.useState(false)
   const navigate = useNavigate()
   const location = useLocation()
@@ -20,8 +22,7 @@ export function NFTCard({ nft, className }: NFTCardProps) {
     navigate({ to: '/login', search: { redirect: location.href } })
   }
 
-  // Tiragem de até 3 edições recebe o selo "Raro"
-  const isRare = nft.editions.some((edition) => edition.total <= 3)
+  const { isRare } = nft
 
   return (
     <article className={cn('group relative font-mono', className)}>
@@ -68,7 +69,7 @@ export function NFTCard({ nft, className }: NFTCardProps) {
         </div>
       </div>
 
-      <h3 className="mt-2 truncate text-sm leading-6 sm:text-base">
+      <h3 className={cn('mt-2 truncate text-sm leading-6', compact ? 'sm:text-[15px] sm:leading-5' : 'sm:text-base')}>
         {/* Link esticado: o card inteiro leva ao detalhe do NFT */}
         <Link
           to="/nft/$nftId"
@@ -79,7 +80,12 @@ export function NFTCard({ nft, className }: NFTCardProps) {
           {isRare && <span className="sr-only"> (raro)</span>}
         </Link>
       </h3>
-      <p className="mt-0.5 flex flex-wrap items-baseline gap-x-3 text-[15px] leading-6 sm:text-lg sm:leading-7">
+      <p
+        className={cn(
+          'mt-0.5 flex flex-wrap items-baseline gap-x-3 text-[15px] leading-6',
+          compact ? 'sm:mt-0 sm:leading-5' : 'sm:text-lg sm:leading-7',
+        )}
+      >
         <span className="font-bold text-kurio-orange-light">
           <span className="sr-only">Preço: </span>
           {nft.price} ETH

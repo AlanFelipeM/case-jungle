@@ -15,16 +15,49 @@ export interface NFT {
   description: string
   attributes: NFTAttribute[]
   isFeatured: boolean
+  /** Selo "Raro" nos cards */
+  isRare: boolean
   createdAt: string
   updatedAt: string
   version: number
+  // ─── Informações do detalhe ───
+  /** Imagem em alta resolução (galeria) */
+  imageLarge: string
+  tokenId: string
+  contractAddress: string
+  /** Percentual de direitos autorais do criador nas vendas secundárias */
+  royaltyPercent: number
+  /** Texto longo da aba "Detalhes do NFT" */
+  story: string[]
+  rating: number
+  reviewCount: number
 }
 
 export interface NFTEdition {
   id: string
-  number: number
-  available: number
+  /** Rótulo exibido: "1/1", "1/10", "1/50" ou "Aberta" */
+  label: string
+  /** Tiragem total; null para edição aberta */
+  total: number | null
+  /** Unidades disponíveis; null para edição aberta (sem limite de estoque) */
+  available: number | null
+}
+
+/** Limite de unidades por pedido, inclusive em edições abertas */
+export const MAX_QUANTITY_PER_ORDER = 10
+
+export interface NFTReview {
+  id: string
+  author: string
+  rating: number
+  comment: string
+  date: string
+}
+
+export interface NFTReviewsResponse {
+  items: NFTReview[]
   total: number
+  average: number
 }
 
 export interface NFTAttribute {
@@ -56,6 +89,7 @@ export type NFTTab = 'all' | 'new' | 'trending'
 // ─── NFT List ──────────────────────────────────────────────────────────────
 export interface NFTListParams {
   search?: string
+  collection?: string
   category?: NFTCategory
   priceMin?: string
   priceMax?: string
@@ -178,13 +212,16 @@ export interface Wallet {
 }
 
 // ─── Socket Events ─────────────────────────────────────────────────────────
+/** Evento Socket.IO "nft.updated": preço e disponibilidade atuais de um NFT */
 export interface NFTUpdatedEvent {
+  /** Identidade estável do evento (deduplicação) */
   id: string
   resource: 'nft'
   nftId: string
-  price: string
-  available: number
+  /** Versão do recurso: eventos com versão menor ou igual à conhecida são ignorados */
   version: number
+  price: string
+  editions: { id: string; available: number | null }[]
   timestamp: string
 }
 
