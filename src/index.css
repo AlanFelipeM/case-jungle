@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Brand Colors - Dark amber/brown theme matching the design */
+    --bg-primary: #1a0e00;
+    --bg-secondary: #241508;
+    --bg-card: #2a1a08;
+    --bg-card-hover: #321f0a;
+    --bg-sidebar: #1f1208;
+
+    --accent-primary: #d97b2a;
+    --accent-primary-hover: #e8893a;
+    --accent-secondary: #c46a1a;
+
+    --text-primary: #f5e6cc;
+    --text-secondary: #b8936a;
+    --text-muted: #7a5c3a;
+
+    --border-color: #3d2710;
+    --border-accent: #d97b2a;
+
+    --nft-tag-bg: #3d2710;
+    --success: #4ade80;
+    --error: #f87171;
+  }
+}
+
+@theme {
+  --color-bg-primary: #1a0e00;
+  --color-bg-secondary: #241508;
+  --color-bg-card: #2a1a08;
+  --color-bg-card-hover: #321f0a;
+  --color-bg-sidebar: #1f1208;
+
+  --color-accent: #d97b2a;
+  --color-accent-hover: #e8893a;
+  --color-accent-secondary: #c46a1a;
+
+  --color-text-primary: #f5e6cc;
+  --color-text-secondary: #b8936a;
+  --color-text-muted: #7a5c3a;
+
+  --color-border: #3d2710;
+
+  --font-family-sans: 'Inter', 'Space Grotesk', system-ui, sans-serif;
+  --font-family-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+
+  /* Figma tokens (frame "Início") */
+  --font-mono: 'Roboto Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --color-kurio-bg: #140d0a;
+  --color-kurio-cream: #f5f1eb;
+  --color-kurio-sand: #cfb28c;
+  --color-kurio-orange: #d28a4c;
+  --color-kurio-orange-hover: #e09a5c;
+  --color-kurio-orange-light: #e89b55;
+  --color-kurio-line: #432c1a;
+  --color-kurio-surface: #241612;
+  --color-kurio-surface-warm: #281a11;
+  --color-kurio-muted: #b39463;
+  --color-kurio-outline: #4a2f22;
+
+  --animate-hero-fade: hero-fade 400ms ease-out;
+  @keyframes hero-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  --animate-sheet-in: sheet-in 250ms ease-out;
+  @keyframes sheet-in {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+  }
+}
+
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #140d0a;
+  color: #f5e6cc;
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Shimmer skeleton animation */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #2a1a08 25%,
+    #3d2710 50%,
+    #2a1a08 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.5rem;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #1a0e00;
+}
+::-webkit-scrollbar-thumb {
+  background: #3d2710;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #d97b2a;
+}
+
+/* Price range slider custom styling */
+input[type="range"] {
+  accent-color: #d97b2a;
+}
+
+/* Focus visible styles for accessibility */
+:focus-visible {
+  outline: 2px solid #d97b2a;
+  outline-offset: 2px;
+}

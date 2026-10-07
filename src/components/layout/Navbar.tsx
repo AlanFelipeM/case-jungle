@@ -1,0 +1,168 @@
+import React from 'react'
+import { Link, useLocation } from '@tanstack/react-router'
+import { LogOut, Menu, X } from 'lucide-react'
+import { CartIcon } from '@/components/icons'
+import { cn } from '@/lib/utils'
+import { useCartCount } from '@/hooks/useCart'
+import { SearchDialog } from './SearchDialog'
+
+const NAV_LINKS = [
+  { label: 'Início', href: '/' },
+  { label: 'Mercado', href: '/mercado' },
+  { label: 'Criadores', href: '/criadores' },
+  { label: 'Aprenda', href: '/aprenda' },
+]
+
+export function Navbar() {
+  const [menuOpen, setMenuOpen] = React.useState(false)
+  const location = useLocation()
+  const cartCount = useCartCount()
+  // Após o login, o usuário volta para onde estava
+  const loginSearch = { redirect: location.pathname === '/login' ? undefined : location.href }
+
+  // Fecha o menu mobile ao navegar ou ao pressionar Escape
+  React.useEffect(() => setMenuOpen(false), [location.pathname])
+  React.useEffect(() => {
+    if (!menuOpen) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMenuOpen(false)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [menuOpen])
+
+  return (
+    <header className="sticky top-0 z-50 w-full bg-kurio-bg font-mono text-kurio-cream">
+      <div className="mx-auto max-w-[1440px] px-4 md:px-6">
+        <div className="relative mx-auto flex h-[68px] max-w-[1200px] items-center justify-between border-b border-kurio-line pt-3">
+          {/* Logo */}
+          <Link to="/" className="text-sm font-bold tracking-[0.1em]" aria-label="Kurio — página inicial">
+            KURIO
+          </Link>
+
+          {/* Desktop nav */}
+          <nav
+            className="absolute inset-y-0 left-1/2 hidden -translate-x-1/2 lg:flex xl:left-[376px] xl:translate-x-0"
+            aria-label="Navegação principal"
+          >
+            <ul className="flex gap-10">
+              {NAV_LINKS.map((link) => {
+                const isActive = location.pathname === link.href
+                return (
+                  <li key={link.href} className="flex">
+                    <Link
+                      to={link.href}
+                      aria-current={isActive ? 'page' : undefined}
+                      className={cn(
+                        'relative pt-[21px] text-base leading-6 transition-colors',
+                        isActive
+                          ? 'font-semibold text-kurio-orange-light'
+                          : 'hover:text-kurio-orange-light',
+                      )}
+                    >
+                      {link.label}
+                      {isActive && (
+                        <span
+                          aria-hidden
+                          className="absolute inset-x-0 -bottom-px h-[3px] bg-kurio-orange"
+                        />
+                      )}
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          </nav>
+
+          {/* Ações */}
+          <div className="flex items-center">
+            <div className="flex items-center gap-2">
+              <SearchDialog />
+              <Link
+                to="/carrinho"
+                aria-label={
+                  cartCount > 0
+                    ? `Carrinho de compras, ${cartCount} ${cartCount === 1 ? 'item' : 'itens'}`
+                    : 'Carrinho de compras, vazio'
+                }
+                className="relative grid size-10 place-items-center rounded-md transition-colors hover:text-kurio-orange-light"
+              >
+                <CartIcon size={24} />
+                {cartCount > 0 && (
+                  <span
+                    aria-hidden
+                    className="absolute top-2 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-kurio-orange px-1 text-[10px] leading-none font-semibold text-kurio-bg"
+                  >
+                    {cartCount > 99 ? '99+' : cartCount}
+                  </span>
+                )}
+              </Link>
+            </div>
+
+            <Link
+              to="/login"
+              search={loginSearch}
+              className="ml-7 hidden h-[35px] w-[100px] items-center justify-center gap-1 rounded-[4px] bg-kurio-orange text-base font-medium text-kurio-bg transition-colors hover:bg-kurio-orange-hover md:inline-flex"
+            >
+              <LogOut size={20} strokeWidth={2} aria-hidden />
+              Entrar
+            </Link>
+
+            {/* Mobile menu toggle */}
+            <button
+              type="button"
+              className="ml-2 grid size-10 place-items-center rounded-md transition-colors hover:text-kurio-orange-light lg:hidden"
+              onClick={() => setMenuOpen((open) => !open)}
+              aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
+              aria-expanded={menuOpen}
+              aria-controls="mobile-menu"
+            >
+              {menuOpen ? <X size={24} aria-hidden /> : <Menu size={24} aria-hidden />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile menu */}
+      {menuOpen && (
+        <nav
+          id="mobile-menu"
+          aria-label="Navegação principal"
+          className="border-b border-kurio-line bg-kurio-bg px-4 pb-6 pt-2 md:px-6 lg:hidden"
+        >
+          <ul className="mx-auto flex max-w-[1200px] flex-col">
+            {NAV_LINKS.map((link) => {
+              const isActive = location.pathname === link.href
+              return (
+                <li key={link.href}>
+                  <Link
+                    to={link.href}
+                    aria-current={isActive ? 'page' : undefined}
+                    className={cn(
+                      'block border-l-[3px] py-3 pl-3 text-base transition-colors',
+                      isActive
+                        ? 'border-kurio-orange font-semibold text-kurio-orange-light'
+                        : 'border-transparent hover:text-kurio-orange-light',
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              )
+            })}
+            <li className="mt-4 md:hidden">
+              <Link
+                to="/login"
+                search={loginSearch}
+                className="inline-flex h-[35px] items-center gap-1.5 rounded-[4px] bg-kurio-orange px-2.5 text-base font-medium text-kurio-bg transition-colors hover:bg-kurio-orange-hover"
+              >
+                <LogOut size={20} strokeWidth={2} aria-hidden />
+                Entrar
+              </Link>
+            </li>
+          </ul>
+        </nav>
+      )}
+    </header>
+  )
+}
