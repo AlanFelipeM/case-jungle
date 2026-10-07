@@ -43,7 +43,7 @@ export function MobileTabBar() {
           </Link>
         </li>
         <li>
-          <Link to="/favoritos" aria-label="Favoritos" activeOptions={EXACT} className={ITEM}>
+          <Link to="/perfil/lista-de-interesse" aria-label="Favoritos" activeOptions={EXACT} className={ITEM}>
             <FavoriteIcon size={22} />
           </Link>
         </li>

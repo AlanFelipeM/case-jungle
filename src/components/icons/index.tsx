@@ -132,3 +132,79 @@ export function ThankYouIcon({ size = 80, ...props }: IconProps) {
     </Svg>
   )
 }
+
+// ─── Ícones do perfil (originais em src/icons) ───────────────────────────
+
+/** Dados do perfil */
+export function UserOutlineIcon({ size = 18, ...props }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden focusable="false" {...props}>
+      <path fillRule="evenodd" clipRule="evenodd" d="M9 2.65385C7.61038 2.65385 6.48387 3.77313 6.48387 5.15385C6.48387 6.53456 7.61038 7.65385 9 7.65385C10.3896 7.65385 11.5161 6.53456 11.5161 5.15385C11.5161 3.77313 10.3896 2.65385 9 2.65385ZM5.32258 5.15385C5.32258 3.13588 6.96902 1.5 9 1.5C11.031 1.5 12.6774 3.13588 12.6774 5.15385C12.6774 7.17181 11.031 8.80769 9 8.80769C6.96902 8.80769 5.32258 7.17181 5.32258 5.15385Z" fill="currentColor" />
+      <path fillRule="evenodd" clipRule="evenodd" d="M7.09963 11.5C5.47683 11.5 4.16129 12.8071 4.16129 14.4195C4.16129 14.5042 4.17686 14.5639 4.19319 14.5987C4.20697 14.6281 4.21879 14.6365 4.22865 14.6418C4.67991 14.8858 5.94511 15.3462 9 15.3462C12.0549 15.3462 13.3201 14.8858 13.7713 14.6418C13.7812 14.6365 13.793 14.6281 13.8068 14.5987C13.8231 14.5639 13.8387 14.5042 13.8387 14.4195C13.8387 12.8071 12.5232 11.5 10.9004 11.5H7.09963ZM3 14.4195C3 12.1699 4.83547 10.3462 7.09963 10.3462H10.9004C13.1645 10.3462 15 12.1699 15 14.4195C15 14.8325 14.8495 15.3725 14.3264 15.6553C13.6335 16.03 12.1469 16.5 9 16.5C5.85311 16.5 4.36654 16.03 3.67359 15.6553C3.15048 15.3725 3 14.8325 3 14.4195Z" fill="currentColor" />
+    </svg>
+  )
+}
+
+/** Ofertas */
+export function ActivityIcon({ size = 18, ...props }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden focusable="false" {...props}>
+      <path d="M5.18799 11.1407L7.43274 8.22393L9.99324 10.2339L12.19 7.39893" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path fillRule="evenodd" clipRule="evenodd" d="M14.7506 1.7627C15.5471 1.7627 16.1921 2.4077 16.1921 3.2042C16.1921 3.99995 15.5471 4.6457 14.7506 4.6457C13.9541 4.6457 13.3091 3.99995 13.3091 3.2042C13.3091 2.4077 13.9541 1.7627 14.7506 1.7627Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M15.5669 6.95204C15.6667 7.62329 15.7124 8.37929 15.7124 9.22754C15.7124 14.431 13.9784 16.165 8.7749 16.165C3.57215 16.165 1.8374 14.431 1.8374 9.22754C1.8374 4.02479 3.57215 2.29004 8.7749 2.29004C9.6074 2.29004 10.3507 2.33429 11.0122 2.43029" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+/** Suporte */
+export function DangerTriangleIcon({ size = 18, ...props }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden focusable="false" {...props}>
+      <path fillRule="evenodd" clipRule="evenodd" d="M9 15.75C4.12918 15.75 2.2175 15.404 1.90764 13.6525C1.59779 11.901 3.58037 8.60806 4.19131 7.52135C6.23443 3.88806 7.62279 2.25 9 2.25C10.3772 2.25 11.7656 3.88806 13.8087 7.52135C14.4196 8.60806 16.4022 11.901 16.0924 13.6525C15.7833 15.404 13.8708 15.75 9 15.75Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9 6.375V9.29625" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M8.99662 11.9214H9.00337" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+/** Arquivos baixados */
+export function DownloadIcon({ size = 18, ...props }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden focusable="false" {...props}>
+      <path d="M8.90967 11.0933V2.0625" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M11.0967 8.89795L8.90966 11.0939L6.72266 8.89795" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12.278 5.44385C14.9622 5.69135 15.938 6.69635 15.938 10.6938C15.938 16.0188 14.2047 16.0188 9.00049 16.0188C3.79474 16.0188 2.06299 16.0188 2.06299 10.6938C2.06299 6.69635 3.03799 5.69135 5.72299 5.44385" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+/** Sair / Entrar */
+export function LogoutIcon({ size = 20, ...props }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden focusable="false" {...props}>
+      <path d="M18.1592 10.1007H8.125" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M15.7202 7.6709L18.1602 10.1009L15.7202 12.5309" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M13.6328 6.35817C13.3578 3.37484 12.2411 2.2915 7.79948 2.2915C1.88198 2.2915 1.88198 4.2165 1.88198 9.99984C1.88198 15.7832 1.88198 17.7082 7.79948 17.7082C12.2411 17.7082 13.3578 16.6248 13.6328 13.6415" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+/** Lista de interesse */
+export function HeartOutlineIcon({ size = 16, ...props }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden focusable="false" {...props}>
+      <path d="M8 15.1099C7.77222 15.1099 7.55261 15.0273 7.38147 14.8774C6.73511 14.3123 6.11194 13.7811 5.56213 13.3126L5.55933 13.3102C3.94739 11.9365 2.55542 10.7502 1.58691 9.58167C0.504272 8.27527 0 7.03662 0 5.68347C0 4.36877 0.450806 3.15588 1.26929 2.26807C2.09753 1.36975 3.23401 0.875 4.46973 0.875C5.39331 0.875 6.23914 1.16699 6.98364 1.7428C7.35938 2.03345 7.69995 2.38916 8 2.80408C8.30017 2.38916 8.64062 2.03345 9.01648 1.7428C9.76099 1.16699 10.6068 0.875 11.5304 0.875C12.766 0.875 13.9026 1.36975 14.7308 2.26807C15.5493 3.15588 16 4.36877 16 5.68347C16 7.03662 15.4958 8.27527 14.4132 9.58154C13.4447 10.7502 12.0529 11.9364 10.4412 13.3099C9.89038 13.7792 9.26624 14.3112 8.61841 14.8777C8.44739 15.0273 8.22766 15.1099 8 15.1099ZM4.46973 1.81226C3.4989 1.81226 2.60706 2.19971 1.95825 2.90332C1.2998 3.61755 0.937134 4.60486 0.937134 5.68347C0.937134 6.82153 1.36011 7.83936 2.30847 8.98364C3.2251 10.0897 4.5885 11.2516 6.16711 12.5969L6.17004 12.5994C6.72192 13.0697 7.34753 13.6029 7.99866 14.1722C8.65369 13.6018 9.28027 13.0677 9.83325 12.5967C11.4117 11.2513 12.775 10.0897 13.6917 8.98364C14.6399 7.83936 15.0629 6.82153 15.0629 5.68347C15.0629 4.60486 14.7002 3.61755 14.0417 2.90332C13.3931 2.19971 12.5011 1.81226 11.5304 1.81226C10.8192 1.81226 10.1663 2.03833 9.58972 2.48413C9.07593 2.88159 8.71802 3.38403 8.50818 3.7356C8.40027 3.91638 8.21033 4.02429 8 4.02429C7.78967 4.02429 7.59973 3.91638 7.49182 3.7356C7.2821 3.38403 6.92419 2.88159 6.41028 2.48413C5.83374 2.03833 5.18079 1.81226 4.46973 1.81226Z" fill="currentColor" />
+    </svg>
+  )
+}
+
+/** Imagem/galeria com cantos arredondados (avatar vazio no perfil) */
+export function GalleryIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg" aria-hidden focusable="false" {...props}>
+      <path d="M3 12c0-6.75 2.25-9 9-9s9 2.25 9 9-2.25 9-9 9-9-2.25-9-9Z" />
+      <circle cx="8.9" cy="8.9" r="1.7" />
+      <path d="M3.6 15.6l3.1-3.1a1.9 1.9 0 0 1 2.6 0l1.3 1.3 2.9-3a1.9 1.9 0 0 1 2.7 0l4.4 4.5" />
+    </svg>
+  )
+}

@@ -43,6 +43,8 @@ const ADDRESS_PATTERNS: Record<Network, RegExp> = {
   solana: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/,
 }
 
+export const isValidAddress = (address: string, network: Network) => ADDRESS_PATTERNS[network].test(address.trim())
+
 /** Carteira efetiva: a cadastrada selecionada ou a informada manualmente */
 export function resolveWallet(form: CheckoutForm, wallets: Wallet[]) {
   if (form.useOtherWallet) return { address: form.walletAddress.trim(), network: form.network }

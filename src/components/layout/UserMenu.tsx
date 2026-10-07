@@ -1,8 +1,8 @@
 import { useNavigate } from '@tanstack/react-router'
-import { ChevronDown, Heart, LogOut, UserRound, Wallet } from 'lucide-react'
+import { ChevronDown, MapPin } from 'lucide-react'
 import type { User } from '@/types'
 import { useLogout } from '@/hooks/useAuth'
-import { UserIcon } from '@/components/icons'
+import { HeartOutlineIcon, LogoutIcon, UserIcon, UserOutlineIcon } from '@/components/icons'
 import { toast } from '@/lib/toast'
 import { isProtectedPath } from '@/components/auth/AuthProvider'
 import {
@@ -60,17 +60,17 @@ export function UserMenu({ user }: { user: User }) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => navigate({ to: '/perfil' })}>
-          <UserRound size={16} aria-hidden /> Meu perfil
+          <UserOutlineIcon size={16} /> Meu perfil
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => navigate({ to: '/carteiras' })}>
-          <Wallet size={16} aria-hidden /> Carteiras
+        <DropdownMenuItem onSelect={() => navigate({ to: '/perfil/carteiras' })}>
+          <MapPin size={16} aria-hidden /> Carteiras
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => navigate({ to: '/favoritos' })}>
-          <Heart size={16} aria-hidden /> Favoritos
+        <DropdownMenuItem onSelect={() => navigate({ to: '/perfil/lista-de-interesse' })}>
+          <HeartOutlineIcon size={15} /> Lista de interesse
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={signOut}>
-          <LogOut size={16} aria-hidden /> Sair
+          <LogoutIcon size={16} /> Sair
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

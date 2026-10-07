@@ -1,3 +1,4 @@
+import type React from 'react'
 import {
   createRootRoute,
   createRoute,
@@ -12,9 +13,13 @@ import { CartPage } from '@/pages/CartPage'
 import { PaymentPage } from '@/pages/PaymentPage'
 import { OrderPage } from '@/pages/OrderPage'
 import { ExplorerPage } from '@/pages/ExplorerPage'
-import { ComingSoonPage, NotFoundPage, UnavailablePage } from '@/pages/StatusPage'
+import { NotFoundPage, UnavailablePage } from '@/pages/StatusPage'
 import { parseCatalogSearch } from '@/lib/catalogSearch'
 import { AuthPage } from '@/pages/AuthPage'
+import { ProfileLayout, ProfileUnavailable } from '@/pages/profile/ProfileLayout'
+import { ProfileDataPage } from '@/pages/profile/ProfileDataPage'
+import { WalletsPage } from '@/pages/profile/WalletsPage'
+import { FavoritesListPage } from '@/pages/profile/FavoritesListPage'
 import { getToken } from '@/lib/session'
 
 /** Parâmetros de /login e /cadastro: retorno ao fluxo anterior e motivo */
@@ -111,25 +116,44 @@ const orderRoute = createRoute({
   component: OrderPage,
 })
 
+// ─── Meu perfil (área privada com navegação lateral) ──────────────────────
 const profileRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/perfil',
   beforeLoad: requireAuth,
-  component: () => <ComingSoonPage title="Meu perfil" />,
+  component: ProfileLayout,
 })
 
+const profileSection = <TPath extends string>(path: TPath, component: () => React.ReactNode) =>
+  createRoute({ getParentRoute: () => profileRoute, path, component })
+
+const profileChildren = [
+  profileSection('/', ProfileDataPage),
+  profileSection('carteiras', WalletsPage),
+  profileSection('lista-de-interesse', FavoritesListPage),
+  // Fora do escopo da entrega (README §3): exibidas como indisponíveis
+  profileSection('atividade', () => <ProfileUnavailable title="Atividade" />),
+  profileSection('ofertas', () => <ProfileUnavailable title="Ofertas" />),
+  profileSection('arquivos-baixados', () => <ProfileUnavailable title="Arquivos baixados" />),
+  profileSection('suporte', () => <ProfileUnavailable title="Suporte" />),
+  profileSection('colecao', () => <ProfileUnavailable title="Minha coleção" />),
+] as const
+
+// Endereços antigos continuam funcionando
 const walletsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/carteiras',
-  beforeLoad: requireAuth,
-  component: () => <ComingSoonPage title="Carteiras" />,
+  beforeLoad: () => {
+    throw redirect({ to: '/perfil/carteiras', replace: true })
+  },
 })
 
 const favoritesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/favoritos',
-  beforeLoad: requireAuth,
-  component: () => <ComingSoonPage title="Lista de interesse" />,
+  beforeLoad: () => {
+    throw redirect({ to: '/perfil/lista-de-interesse', replace: true })
+  },
 })
 
 // Seções editoriais/auxiliares fora do escopo (README §3)
@@ -150,15 +174,13 @@ const routeTree = rootRoute.addChildren([
   checkoutRoute,
   orderRoute,
   explorerRoute,
-  profileRoute,
+  profileRoute.addChildren(profileChildren),
   favoritesRoute,
   walletsRoute,
   unavailable('/criadores', 'Criadores'),
   unavailable('/aprenda', 'Aprenda'),
   unavailable('/blog/$slug', 'Diário da Cunhagem'),
   unavailable('/ajuda/$', 'Central de ajuda'),
-  unavailable('/perfil/colecao', 'Minha coleção'),
-  unavailable('/perfil/atividade', 'Atividade'),
   unavailable('/estudio', 'Estúdio do criador'),
 ])
 

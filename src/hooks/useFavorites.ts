@@ -40,6 +40,7 @@ export function useToggleFavorite() {
         'error',
       )
     },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [...favoriteKeys.all, 'nfts'] }),
     onSuccess: (ids, { favorite, name }) => {
       queryClient.setQueryData(favoriteKeys.all, ids)
       toast(favorite ? `${name} adicionado aos favoritos.` : `${name} removido dos favoritos.`, 'success')

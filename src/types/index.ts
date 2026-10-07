@@ -302,9 +302,42 @@ export interface Wallet {
   network: Network
   isPrimary: boolean
   label?: string
-  /** Nome ENS associado (ex.: nova.kurio.eth) */
+  /** Nome ENS ou carteira secundária associada (ex.: nova.kurio.eth) */
   ens?: string
   connector: WalletConnector
+  /** Dados de identificação da carteira (tela de carteiras) */
+  ownerName?: string
+  profileName?: string
+  email?: string
+  ensName?: string
+  referralCode?: string
+  /** Carteira secundária igual à principal */
+  sameAsPrimary?: boolean
+}
+
+export type WalletSlot = 'primary' | 'secondary'
+
+export interface WalletInput {
+  label: string
+  network: Network
+  address: string
+  ens?: string
+  connector: WalletConnector
+  ownerName: string
+  profileName: string
+  email: string
+  ensName: string
+  referralCode?: string
+}
+
+/** Perfil editável da conta */
+export interface AccountProfile extends CollectorProfile {
+  avatar?: string
+}
+
+export interface PasswordChange {
+  currentPassword: string
+  newPassword: string
 }
 
 // ─── Socket Events ─────────────────────────────────────────────────────────
