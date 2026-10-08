@@ -34,13 +34,15 @@ export function useToggleFavorite() {
       return { previous }
     },
     onError: (error, { favorite, name }, context) => {
-      queryClient.setQueryData(favoriteKeys.all, context?.previous)
+      // Sem snapshot (a lista ainda carregava), o onSettled busca o estado do servidor
+      if (context?.previous) queryClient.setQueryData(favoriteKeys.all, context.previous)
       toast(
         `${getErrorMessage(error, `Não foi possível ${favorite ? 'favoritar' : 'remover'} ${name}.`)} A alteração foi desfeita.`,
         'error',
       )
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: [...favoriteKeys.all, 'nfts'] }),
+    // Ressincroniza com o servidor (inclui a lista de interesse): cobre rollback sem snapshot
+    onSettled: () => queryClient.invalidateQueries({ queryKey: favoriteKeys.all }),
     onSuccess: (ids, { favorite, name }) => {
       queryClient.setQueryData(favoriteKeys.all, ids)
       toast(favorite ? `${name} adicionado aos favoritos.` : `${name} removido dos favoritos.`, 'success')

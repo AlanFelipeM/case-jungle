@@ -32,8 +32,10 @@ npx msw init public
 | `npm run build` | Verificação de tipos (`tsc -b`) e build de produção em `dist/` |
 | `npm run preview` | Serve o build de `dist/` |
 | `npm run typecheck` | Verificação de tipos sem gerar arquivos |
-| `npm run test:e2e` | Testes Playwright (sobe o `npm run dev` automaticamente) |
+| `npm run test:e2e` | Testes E2E e regressão visual (sobe o `npm run dev` automaticamente) |
 | `npm run test:e2e:ui` | Playwright em modo interativo |
+| `npm run test:e2e:update` | Regenera as baselines de regressão visual |
+| `npm run test:e2e:report` | Abre o relatório HTML da última execução |
 
 ### Build de demonstração (com mocks)
 
@@ -86,10 +88,13 @@ __kurioMock.setScenario({ payment: 'reject' })            // pagamento recusado
 __kurioMock.setScenario({ walletConnection: 'reject' })   // carteira recusa a conexão
 __kurioMock.setScenario({ orderResponseDelayMs: 10000 })  // resposta do pedido após o timeout de 8s
 __kurioMock.setScenario({ paymentDelayMs: 15000 })        // pedido fica pendente por 15s
+__kurioMock.setScenario({ networkLatencyMs: 2000, latencyJitterMs: 800 }) // lentidão e latência variável em toda a API
 
-// Falhas HTTP: a próxima requisição que casar com método + caminho recebe o status
+// Falhas: a próxima requisição que casar com método + caminho recebe o status
+// (persistidas: valem também para a próxima carga da página)
 __kurioMock.failNext('PUT', '/api/favorites', 503)
 __kurioMock.failNext('GET', '/api/nfts', 500)
+__kurioMock.failNext('GET', '/api/cart', 'network')   // falha de conexão
 
 // Sessão e carteira
 __kurioMock.expireSession()       // a próxima requisição autenticada recebe 401 SESSION_EXPIRED
@@ -101,12 +106,14 @@ __kurioMock.emitNftUpdate('nft-001', { editions: { '1/50': 0 } })  // edição e
 __kurioMock.replayEvent(ev)       // evento duplicado/antigo (deve ser ignorado)
 __kurioMock.replayOrderEvent(evPedido)
 __kurioMock.dropConnections()     // derruba o socket; o cliente reconecta e reconcilia via REST
+__kurioMock.getConnections()      // conexões abertas e o usuário de cada uma
 
 // Reset
 __kurioMock.resetCart()
 __kurioMock.resetOrders()
 __kurioMock.resetScenario()
-__kurioMock.resetAll()            // carrinhos, pedidos, cenário, usuários e sessões
+__kurioMock.resetFailures()
+__kurioMock.resetAll()            // carrinhos, pedidos, cenário, falhas, usuários e sessões
 ```
 
 Depois de `resetAll()`, recarregue a página. Para voltar a um estado totalmente limpo, também dá para limpar o `localStorage` do site: todas as chaves usam o prefixo `kurio:`.
@@ -120,7 +127,9 @@ Entre com `nova@kurio.app` / `Kurio@123` antes dos cenários que exigem login.
 | Cenário | Como reproduzir | Resultado esperado |
 | --- | --- | --- |
 | Resultado vazio | Busque por `zzzz` no catálogo | Estado vazio com opção de limpar filtros |
-| Falha de listagem | `failNext('GET', '/api/nfts', 500)` e mude um filtro | Mensagem de erro com "Tentar novamente" |
+| Carregamento lento | `setScenario({ networkLatencyMs: 2000 })` e recarregue | Skeletons com shimmer no catálogo, detalhe e carrinho |
+| Falha de listagem | `failNext('GET', '/api/nfts', 500)` três vezes (a consulta tenta 3 vezes) e mude um filtro | Mensagem de erro com "Tentar novamente" |
+| Sem conexão | `failNext('GET', '/api/cart', 'network')` três vezes e abra o carrinho | Erro de carregamento com "Tentar novamente" |
 | NFT inexistente | Acesse `/nft/nao-existe` | Página de NFT não encontrado |
 | Rota inexistente | Acesse `/qualquer-coisa` | Página 404 |
 | Favorito com falha | `failNext('PUT', '/api/favorites', 503)` e favorite um NFT | O coração muda na hora, volta ao estado anterior e um toast avisa |
@@ -138,6 +147,38 @@ Entre com `nova@kurio.app` / `Kurio@123` antes dos cenários que exigem login.
 | Clique repetido | Clique várias vezes em confirmar | Um único pedido |
 | Queda durante pedido pendente | `setScenario({ paymentDelayMs: 15000 })`, confirme, rode `dropConnections()` ou recarregue a página | O pedido pendente é retomado e chega à confirmação/recusa sem nova compra |
 | Evento duplicado/antigo | `replayEvent(ev)` com um evento já aplicado | Nada muda (versão já conhecida) |
+
+## Testes E2E
+
+```bash
+npx playwright install chromium   # primeira vez
+npm run test:e2e
+npm run test:e2e:report           # relatório HTML (traces, vídeos e screenshots das falhas)
+```
+
+Os testes ficam em `tests/e2e` e rodam no Chromium em dois projetos: desktop (1440×900) e mobile (390×844). Cada teste parte de um contexto novo, com `localStorage`, service worker e estado dos mocks isolados.
+
+- **REST:** as requisições passam pelos handlers MSW.
+- **Tempo real:** os eventos saem do servidor Socket.IO simulado e chegam pelo `socket.io-client` da aplicação.
+- **Controle dos cenários:** latência, falhas, eventos e relógio são controlados pelos testes (`window.__kurioMock` e `page.clock`).
+
+| Arquivo | Cobertura |
+| --- | --- |
+| `01-catalog` | Busca, filtros combinados, ordenação, paginação, URL, histórico e refresh |
+| `02-detail` | Acesso direto, NFT inexistente, rota inexistente, edição esgotada e limite de quantidade |
+| `03-auth` | Cadastro com validação e conflito, login, retorno ao fluxo, expiração (inclusive no checkout e por relógio), logout e troca de usuário |
+| `04-favorites` | Persistência, falha de mutation com rollback e nova tentativa |
+| `05-cart` | Quantidades, remoção, cupom, valores da API, refresh, login e falha com rollback |
+| `06-purchase` | Compra completa do catálogo ao recibo confirmado |
+| `07-payment-failures` | Pagamento recusado, carteira recusada ou desconectada, clique repetido, timeout com recuperação e conflito de idempotência |
+| `08-profile` | Perfil, avatar, senha e carteiras com erros de validação e da API |
+| `09-realtime-checkout` | Preço e disponibilidade alterados via Socket.IO no carrinho e no checkout |
+| `10-realtime-resilience` | Eventos duplicados ou antigos, reconexão com reconciliação e retomada de pedido pendente |
+| `11-keyboard-a11y` | Teclado, foco em diálogos, validação acessível e ausência de overflow horizontal |
+| `12-loading-errors` | Skeletons com carregamento lento, falhas HTTP e de conexão e recuperação |
+| `visual` | Regressão visual de início, detalhe, carrinho e pagamento (desktop e mobile) |
+
+As baselines visuais ficam em `tests/e2e/visual.spec.ts-snapshots/`, separadas por projeto e sistema operacional. As versionadas foram geradas no Windows. Em outro sistema, gere as próprias com `npm run test:e2e:update`, porque a renderização de fontes muda entre plataformas.
 
 ## Rotas
 

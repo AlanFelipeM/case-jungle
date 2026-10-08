@@ -1,5 +1,5 @@
-import { dropConnections, emitNftUpdate, replayEvent, replayOrderEvent } from './handlers/realtime'
-import { failNext } from './handlers/failures'
+import { dropConnections, emitNftUpdate, getConnections, replayEvent, replayOrderEvent } from './handlers/realtime'
+import { failNext, resetFailures } from './handlers/failures'
 import { resetCart } from './handlers/cart'
 import { disconnectWallets, resetOrders } from './handlers/checkout'
 import { expireSessions, resetAuth } from './auth'
@@ -18,6 +18,7 @@ export const mockControls = {
   replayEvent,
   replayOrderEvent,
   dropConnections,
+  getConnections,
   // falhas e cenários
   failNext,
   getScenario,
@@ -29,7 +30,9 @@ export const mockControls = {
   resetCart,
   resetOrders,
   resetScenario,
+  resetFailures,
   resetAll: () => {
+    resetFailures()
     resetCart()
     resetOrders()
     resetScenario()

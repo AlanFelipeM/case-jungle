@@ -259,7 +259,7 @@ Padrões globais (`main.tsx`): `staleTime: 30s`, `retry: 2`, `refetchOnWindowFoc
 
 - **Cancelamento:** toda `queryFn` repassa o `signal` ao Axios. Uma consulta substituída (filtro novo, por exemplo) é abortada, e a resposta obsoleta é descartada.
 - **Atualização otimista com rollback:**
-  - favoritos (`useToggleFavorite`): `onMutate` → snapshot → `onError` restaura e avisa por toast;
+  - favoritos (`useToggleFavorite`): `onMutate` → snapshot → `onError` restaura e avisa por toast. O `onSettled` ressincroniza com o servidor, o que cobre o caso em que o clique acontece antes de a lista carregar e não existe snapshot;
   - quantidade e remoção no carrinho.
 - **Invalidação:**
   - mutations gravam a resposta da API no cache (`setQueryData`) e invalidam só o que depende dela (cotação, lista de interesse);
@@ -268,8 +268,8 @@ Padrões globais (`main.tsx`): `staleTime: 30s`, `retry: 2`, `refetchOnWindowFoc
 
 ## Mocks (MSW)
 
-- Os handlers ficam em `src/mocks/handlers`. `failures.ts` é registrado primeiro e só intercepta quando há uma falha agendada (`failNext`).
-- **Estado persistido** (`localStorage`, prefixo `kurio:mock:`): usuários, sessões, carrinhos, pedidos e cenário.
+- Os handlers ficam em `src/mocks/handlers`. `failures.ts` é registrado primeiro: ele aplica a latência extra do cenário (`networkLatencyMs`, `latencyJitterMs`) e só responde quando há uma falha agendada (`failNext`), com status HTTP ou falha de conexão.
+- **Estado persistido** (`localStorage`, prefixo `kurio:mock:`): usuários, sessões, carrinhos, pedidos, cenário e falhas agendadas.
 - **Estado em memória:** catálogo, sessões de carteira e sockets.
 - **Fixtures determinísticas:**
   - 239 NFTs, sendo 13 curados e o restante gerado de forma estável para bater com as contagens por categoria;
@@ -277,7 +277,7 @@ Padrões globais (`main.tsx`): `staleTime: 30s`, `retry: 2`, `refetchOnWindowFoc
   - 2 usuários semente e 3 cupons (válido, válido e expirado).
 - **Latência:** 100–600ms por rota. O catálogo tem variação aleatória (+0–200ms) para exercitar respostas fora de ordem, que o cancelamento por `signal` e as query keys por parâmetro tratam.
 - **Cenários reproduzíveis:** `setScenario` (carteira, pagamento, atraso do pedido e da confirmação), `failNext` (status HTTP por método e rota), `expireSession`, `disconnectWallets`, `dropConnections` e a emissão manual de eventos.
-- **Reset:** `resetAll()` restaura usuários, sessões, carrinhos, pedidos e cenário. Um refresh restaura o catálogo em memória.
+- **Reset:** `resetAll()` restaura usuários, sessões, carrinhos, pedidos, cenário e falhas agendadas. Um refresh restaura o catálogo em memória.
 
 ### Transporte Socket.IO e limitações
 
@@ -288,6 +288,7 @@ Padrões globais (`main.tsx`): `staleTime: 30s`, `retry: 2`, `refetchOnWindowFoc
 - **Autenticação.** Vai pela query do handshake (`?token=`), não pelo payload `auth`.
 - **Escopo por aba.** O "servidor" roda dentro da aba: eventos emitidos em uma aba não chegam a outras, e o catálogo alterado volta ao estado inicial após um refresh.
 - **Temporizadores.** Os pedidos pendentes são resolvidos por `setTimeout` na aba. Se ela for fechada, o próximo `GET /orders/:id` resolve o pedido.
+- **Corrida entre REST e evento.** Se um `nft.updated` chega enquanto uma consulta REST ao mesmo recurso ainda está em andamento, a resposta antiga pode sobrescrever o evento. A próxima invalidação ou reconexão corrige o estado. Nos testes, os eventos só são emitidos depois de a tela carregar.
 
 ## Acessibilidade
 
