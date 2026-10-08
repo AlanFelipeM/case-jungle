@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from '@tanstack/react-router'
 import { useFavorite } from '@/hooks/useFavorites'
-import { useAuthPrompt } from '@/components/auth/AuthProvider'
+import { useAuthPrompt } from '@/components/auth/authContext'
 import { Heart } from 'lucide-react'
 import type { NFT } from '@/types'
 import { cn } from '@/lib/utils'

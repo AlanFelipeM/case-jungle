@@ -8,27 +8,9 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { SESSION_EXPIRED_EVENT } from '@/lib/session'
 import { toast } from '@/lib/toast'
 import { AuthPanel, type AuthMode } from './AuthPanel'
-
-/** Telas que exigem login (também protegidas no roteador) */
-export const PROTECTED_PATHS = ['/pagamento', '/perfil', '/carteiras', '/favoritos', '/pedido/']
-export const isProtectedPath = (pathname: string) => PROTECTED_PATHS.some((p) => pathname.startsWith(p))
+import { AuthContext, isProtectedPath, type OpenAuthOptions } from './authContext'
 
 const EXPIRED_NOTICE = 'Sua sessão expirou. Entre novamente para continuar de onde parou.'
-
-interface OpenAuthOptions {
-  mode?: AuthMode
-  /** Para onde voltar depois de entrar (padrão: página atual) */
-  redirect?: string
-  notice?: string
-}
-
-const AuthContext = React.createContext<{ openAuth: (options?: OpenAuthOptions) => void } | null>(null)
-
-export function useAuthPrompt() {
-  const context = React.useContext(AuthContext)
-  if (!context) throw new Error('useAuthPrompt deve ser usado dentro de AuthProvider')
-  return context
-}
 
 /**
  * Login/cadastro acessível de qualquer tela:

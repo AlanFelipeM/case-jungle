@@ -7,7 +7,7 @@ import { useCartCount } from '@/hooks/useCart'
 import { SearchDialog } from './SearchDialog'
 import { UserMenu } from './UserMenu'
 import { useSession } from '@/hooks/useAuth'
-import { useAuthPrompt } from '@/components/auth/AuthProvider'
+import { useAuthPrompt } from '@/components/auth/authContext'
 
 const NAV_LINKS = [
   { label: 'Início', href: '/' },
