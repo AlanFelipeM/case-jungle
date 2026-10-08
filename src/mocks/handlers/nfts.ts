@@ -189,7 +189,7 @@ export const nftHandlers = [
   http.post(`${BASE}/newsletter`, async ({ request }) => {
     await simulateLatency(300)
     const { email } = (await request.json()) as { email?: string }
-    if (!email || !/^[^s@]+@[^s@]+.[^s@]+$/.test(email)) {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return HttpResponse.json({ error: 'Informe um e-mail válido.' }, { status: 422 })
     }
     return HttpResponse.json(
