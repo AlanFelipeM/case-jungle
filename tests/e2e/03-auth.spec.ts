@@ -154,3 +154,19 @@ test.describe('Sessão', () => {
     ).toHaveCount(0)
   })
 })
+
+test.describe('Isolamento entre usuários', () => {
+  test('pedido de outra conta responde sem permissão e não expõe o recibo', async ({ app, page }) => {
+    await app.loginByApi('nova')
+    const orderId = await app.createOrderByApi()
+
+    await app.loginByApi('leo', `/pedido/${orderId}`)
+    await expect(page.getByRole('heading', { name: 'Você não tem acesso a este pedido' })).toBeVisible()
+    await expect(page.getByText(EMERALD.name)).toHaveCount(0)
+
+    const { status, data } = await app.api<{ code: string; items?: unknown }>('GET', `/orders/${orderId}`)
+    expect(status).toBe(403)
+    expect(data.code).toBe('FORBIDDEN')
+    expect(data.items).toBeUndefined()
+  })
+})

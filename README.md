@@ -30,6 +30,7 @@ npx msw init public
 | --- | --- |
 | `npm run dev` | Servidor de desenvolvimento com mocks (MSW sempre ativo em dev) |
 | `npm run build` | Verificação de tipos (`tsc -b`) e build de produção em `dist/` |
+| `npm run build:demo` | Build de demonstração (mocks ativos), o mesmo publicado no deploy |
 | `npm run preview` | Serve o build de `dist/` |
 | `npm run typecheck` | Verificação de tipos sem gerar arquivos |
 | `npm run lint` | ESLint (TypeScript, regras de hooks e Fast Refresh), sem avisos tolerados |
@@ -41,13 +42,10 @@ npx msw init public
 
 ### Build de demonstração (com mocks)
 
-Em produção os mocks só ligam com `VITE_ENABLE_MSW=true`:
+Em produção os mocks só ligam com `VITE_ENABLE_MSW=true`. O modo `demo` (arquivo `.env.demo`, versionado) já define essa variável, e é ele que o deploy usa:
 
 ```bash
-# bash
-VITE_ENABLE_MSW=true npm run build && npm run preview
-# PowerShell
-$env:VITE_ENABLE_MSW="true"; npm run build; npm run preview
+npm run build:demo && npm run preview
 ```
 
 ## Variáveis de ambiente
@@ -168,7 +166,7 @@ Os testes ficam em `tests/e2e` e rodam no Chromium em dois projetos: desktop (14
 | --- | --- |
 | `01-catalog` | Busca, filtros combinados, ordenação, paginação, URL, histórico e refresh |
 | `02-detail` | Acesso direto, NFT inexistente, rota inexistente, edição esgotada e limite de quantidade |
-| `03-auth` | Cadastro com validação e conflito, login, retorno ao fluxo, expiração (inclusive no checkout e por relógio), logout e troca de usuário |
+| `03-auth` | Cadastro com validação e conflito, login, retorno ao fluxo, expiração (inclusive no checkout e por relógio), logout, troca de usuário e acesso negado a pedido de outra conta |
 | `04-favorites` | Persistência, falha de mutation com rollback e nova tentativa |
 | `05-cart` | Quantidades, remoção, cupom, valores da API, refresh, login e falha com rollback |
 | `06-purchase` | Compra completa do catálogo ao recibo confirmado |
@@ -176,7 +174,7 @@ Os testes ficam em `tests/e2e` e rodam no Chromium em dois projetos: desktop (14
 | `08-profile` | Perfil, avatar, senha e carteiras com erros de validação e da API |
 | `09-realtime-checkout` | Preço e disponibilidade alterados via Socket.IO no carrinho e no checkout |
 | `10-realtime-resilience` | Eventos duplicados ou antigos, reconexão com reconciliação e retomada de pedido pendente |
-| `11-keyboard-a11y` | Teclado, foco em diálogos, validação acessível e ausência de overflow horizontal |
+| `11-keyboard-a11y` | Teclado, foco em diálogos, validação acessível e ausência de overflow horizontal em 390, 768 e 1440 px e com zoom de 400% (320 px) |
 | `12-loading-errors` | Skeletons com carregamento lento, falhas HTTP e de conexão e recuperação |
 | `visual` | Regressão visual de início, detalhe, carrinho e pagamento (desktop e mobile) |
 
@@ -214,11 +212,15 @@ A Performance mobile fica abaixo de 90 por causa do ambiente simulado da demonst
 
 ## Deploy
 
-É uma SPA estática. A hospedagem precisa:
+É uma SPA estática, sem backend nem banco de dados: a API e o Socket.IO rodam no navegador via MSW.
 
-1. Rodar o build com `VITE_ENABLE_MSW=true`, para os mocks e o tempo real funcionarem na versão publicada.
-2. Reescrever todas as rotas para `index.html`, para o acesso direto e o refresh funcionarem.
-3. Servir `mockServiceWorker.js` na raiz.
+**Vercel (configurado em `vercel.json`):** importe o repositório e mantenha as configurações do arquivo. Elas definem:
+- `npm run build:demo` como comando de build, com os mocks ativos;
+- `dist` como saída;
+- rewrite de todas as rotas para `index.html`, para o acesso direto e o refresh funcionarem;
+- `mockServiceWorker.js` sem cache.
+
+**Netlify ou Cloudflare Pages:** use `npm run build:demo` como comando de build e `dist` como diretório de saída. O fallback de SPA vem do `public/_redirects`.
 
 ## Estrutura
 

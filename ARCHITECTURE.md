@@ -42,8 +42,9 @@ Base: `/api`. As rotas autenticadas usam `Authorization: Bearer <token>`. Todo e
 | 401 | `UNAUTHORIZED` | Requisição sem sessão em recurso privado |
 | 401 | `SESSION_EXPIRED` | Token expirado ou inexistente |
 | 401 | `INVALID_CREDENTIALS` | Login inválido (mesma resposta para e-mail inexistente e senha errada) |
+| 403 | `FORBIDDEN` | Falta de permissão: pedido de outra conta (nenhum dado do pedido é devolvido) |
 | 403 | `WALLET_REJECTED` | Usuário recusou a conexão na carteira |
-| 404 | `NOT_FOUND` | Recurso inexistente. Um pedido de outro usuário também responde 404, para não revelar que ele existe |
+| 404 | `NOT_FOUND` | Recurso inexistente |
 | 409 | `EMAIL_TAKEN`, `USERNAME_TAKEN`, `WALLET_DUPLICATED` | Conflito de cadastro |
 | 409 | `EDITION_UNAVAILABLE`, `INSUFFICIENT_AVAILABILITY` | Conflito de disponibilidade (com `available`) |
 | 409 | `QUOTE_CHANGED` | Valores mudaram desde a revisão (com a `quote` atual) |
@@ -117,7 +118,7 @@ As rotas aceitam visitante (carrinho `guest`) ou usuário autenticado (carrinho 
 | POST | `/wallet/connect` | `{ connector, address, network }` | 201 `WalletSession` · 403 `WALLET_REJECTED` · 422 |
 | POST | `/wallet/disconnect` | `{ sessionId }` | 204 |
 | POST | `/orders` | `Idempotency-Key: <uuid>` + `CreateOrderPayload` | 201 `Order` · 200 `Order` (mesma tentativa) · 409 `QUOTE_CHANGED` / `WALLET_NOT_CONNECTED` / `IDEMPOTENCY_CONFLICT` · 422 |
-| GET | `/orders/:id` | — | `Order` (estado e recibo) · 404 |
+| GET | `/orders/:id` | — | `Order` (estado e recibo) · 403 de outra conta · 404 |
 
 `CreateOrderPayload` envia:
 - os itens com quantidade e preço unitário revisados;

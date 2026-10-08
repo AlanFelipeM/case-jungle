@@ -170,7 +170,7 @@ export function ProfileDataPage() {
           <p id="avatar-label" className="mb-2 text-[15px] leading-5">
             Avatar
           </p>
-          <div className="flex items-center gap-6" role="group" aria-labelledby="avatar-label">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3" role="group" aria-labelledby="avatar-label">
             {profile.avatar ? (
               <img src={profile.avatar} alt="Seu avatar" width={50} height={50} className="size-[50px] rounded-full object-cover" />
             ) : (

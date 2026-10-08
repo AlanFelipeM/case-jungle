@@ -104,7 +104,7 @@ export function Footer() {
     <footer className="mx-auto mt-24 w-full max-w-[1440px] px-4 pb-6 font-mono text-kurio-cream md:px-6">
       <div className="mx-auto max-w-[1200px]">
         {/* Diferenciais + newsletter */}
-        <div className="grid gap-8 bg-kurio-surface px-6 py-8 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1.35fr] lg:gap-0 lg:pt-8 lg:pr-6 lg:pb-[18px] lg:pl-12">
+        <div className="grid grid-cols-1 gap-8 bg-kurio-surface px-6 py-8 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1.35fr] lg:gap-0 lg:pt-8 lg:pr-6 lg:pb-[18px] lg:pl-12">
           {FEATURES.map((feature, i) => (
             <div
               key={feature.title}
