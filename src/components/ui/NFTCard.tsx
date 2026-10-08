@@ -11,9 +11,11 @@ interface NFTCardProps {
   className?: string
   /** Variante com textos menores (carrosséis) */
   compact?: boolean
+  /** Imagem acima da dobra (candidata a LCP): carrega sem lazy loading e com prioridade */
+  priority?: boolean
 }
 
-export function NFTCard({ nft, className, compact = false }: NFTCardProps) {
+export function NFTCard({ nft, className, compact = false, priority = false }: NFTCardProps) {
   const [imgLoaded, setImgLoaded] = React.useState(false)
   const { openAuth } = useAuthPrompt()
   // Favoritos exigem autenticação; com sessão, alterna de forma otimista
@@ -32,7 +34,8 @@ export function NFTCard({ nft, className, compact = false }: NFTCardProps) {
             alt=""
             width={250}
             height={250}
-            loading="lazy"
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
             decoding="async"
             onLoad={() => setImgLoaded(true)}
             className={cn(

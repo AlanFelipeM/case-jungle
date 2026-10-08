@@ -1,45 +1,26 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { RouterProvider } from '@tanstack/react-router'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { router } from '@/router'
-import '@fontsource-variable/roboto-mono'
-import '@/index.css'
+/*
+ * Ponto de entrada enxuto: a aplicação e a camada de mocks (MSW) baixam em paralelo.
+ * A interface só renderiza depois que o MSW intercepta a rede, para que nenhuma
+ * requisição escape para o servidor real.
+ */
+const mocksEnabled = import.meta.env.DEV || import.meta.env.VITE_ENABLE_MSW === 'true'
 
-async function bootstrap() {
-  // Start MSW in development
-  if (import.meta.env.DEV || import.meta.env.VITE_ENABLE_MSW === 'true') {
-    const { worker } = await import('@/mocks/browser')
-    await worker.start({
-      onUnhandledRequest: 'bypass',
-      serviceWorker: {
-        url: '/mockServiceWorker.js',
-      },
-    })
-    const { mockControls } = await import('@/mocks/controls')
-    window.__kurioMock = mockControls
-  }
-
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 30_000,
-        retry: 2,
-        refetchOnWindowFocus: false,
-      },
+async function enableMocks() {
+  if (!mocksEnabled) return
+  const { worker } = await import('@/mocks/browser')
+  await worker.start({
+    onUnhandledRequest: 'bypass',
+    serviceWorker: {
+      url: '/mockServiceWorker.js',
     },
   })
+  const { mockControls } = await import('@/mocks/controls')
+  window.__kurioMock = mockControls
+}
 
-  const root = document.getElementById('root')
-  if (!root) throw new Error('Root element not found')
-
-  ReactDOM.createRoot(root).render(
-    <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
-    </React.StrictMode>,
-  )
+async function bootstrap() {
+  const [{ renderApp }] = await Promise.all([import('./app'), enableMocks()])
+  renderApp()
 }
 
 bootstrap()

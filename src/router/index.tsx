@@ -10,13 +10,13 @@ import {
 } from '@tanstack/react-router'
 import { Layout } from '@/components/layout/Layout'
 import { HomePage } from '@/pages/HomePage'
+import { NftDetailPage } from '@/pages/NftDetailPage'
 import { NotFoundPage, UnavailablePage } from '@/pages/StatusPage'
 import { parseCatalogSearch } from '@/lib/catalogSearch'
 import { getToken } from '@/lib/session'
 
-// Início fica no bundle principal (primeira tela); as demais rotas carregam sob demanda
-// e são pré-carregadas na intenção de navegação (hover/foco nos links)
-const NftDetailPage = lazyRouteComponent(() => import('@/pages/NftDetailPage'), 'NftDetailPage')
+// Início e detalhe (telas de entrada mais comuns) ficam no bundle principal; as demais rotas
+// carregam sob demanda e são pré-carregadas na intenção de navegação (hover/foco nos links)
 const CartPage = lazyRouteComponent(() => import('@/pages/CartPage'), 'CartPage')
 const PaymentPage = lazyRouteComponent(() => import('@/pages/PaymentPage'), 'PaymentPage')
 const OrderPage = lazyRouteComponent(() => import('@/pages/OrderPage'), 'OrderPage')

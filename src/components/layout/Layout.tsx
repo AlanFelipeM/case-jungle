@@ -41,7 +41,8 @@ export function Layout({ children }: LayoutProps) {
           }
         >
           <Navbar />
-          <main id="main-content" className="flex-1">
+          {/* Altura mínima: enquanto uma rota carrega sob demanda, o rodapé não sobe e depois desce (CLS) */}
+          <main id="main-content" className="min-h-screen flex-1">
             {children}
           </main>
           <div className={isAuth ? 'hidden md:block' : undefined}>

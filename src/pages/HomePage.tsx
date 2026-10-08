@@ -208,9 +208,10 @@ export function HomePage() {
                       isFetching && 'opacity-60',
                     )}
                   >
-                    {nftsData?.data.map((nft) => (
+                    {nftsData?.data.map((nft, index) => (
                       <li key={nft.id}>
-                        <NFTCard nft={nft} />
+                        {/* Primeira linha do catálogo: visível sem rolar no mobile e no desktop */}
+                        <NFTCard nft={nft} priority={index < 3} />
                       </li>
                     ))}
                   </ul>
