@@ -37,6 +37,7 @@ npx msw init public
 | `npm run test:e2e:ui` | Playwright em modo interativo |
 | `npm run test:e2e:update` | Regenera as baselines de regressão visual |
 | `npm run test:e2e:report` | Abre o relatório HTML da última execução |
+| `npm run audit` | Auditoria Lighthouse (build de demonstração + 3 medições por página e perfil) |
 
 ### Build de demonstração (com mocks)
 
@@ -180,6 +181,19 @@ Os testes ficam em `tests/e2e` e rodam no Chromium em dois projetos: desktop (14
 | `visual` | Regressão visual de início, detalhe, carrinho e pagamento (desktop e mobile) |
 
 As baselines visuais ficam em `tests/e2e/visual.spec.ts-snapshots/`, separadas por projeto e sistema operacional. As versionadas foram geradas no Windows. Em outro sistema, gere as próprias com `npm run test:e2e:update`, porque a renderização de fontes muda entre plataformas.
+
+## Auditoria Lighthouse
+
+Início e Detalhe do NFT, em mobile e desktop, com mediana de 3 medições:
+
+| Página | Perfil | Performance | Accessibility | Best Practices | SEO |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Início | mobile | 87 | 100 | 100 | 100 |
+| Detalhe do NFT | mobile | 88 | 100 | 100 | 100 |
+| Início | desktop | 100 | 100 | 100 | 100 |
+| Detalhe do NFT | desktop | 100 | 100 | 100 | 100 |
+
+A Performance mobile fica abaixo de 90 por causa do ambiente simulado da demonstração. A camada de mocks precisa carregar antes da primeira renderização, e a API simulada tem latência. A análise completa, com LCP, CLS e TBT, está em [lighthouse/ANALYSIS.md](lighthouse/ANALYSIS.md). Os números de cada execução ficam em [lighthouse/RESULTS.md](lighthouse/RESULTS.md) e os relatórios HTML e JSON em `lighthouse/reports/`.
 
 ## Rotas
 

@@ -9,6 +9,8 @@ const VENDOR_CHUNKS: Record<string, RegExp> = {
   tanstack: /node_modules[\\/]@tanstack[\\/]/,
   ui: /node_modules[\\/](@radix-ui|@floating-ui|react-remove-scroll|react-remove-scroll-bar|react-style-singleton|use-callback-ref|use-sidecar|aria-hidden|tailwind-merge|clsx|class-variance-authority)[\\/]/,
   http: /node_modules[\\/](axios)[\\/]/,
+  // A camada de mocks não é agrupada à mão: ela compartilha módulos com a aplicação (tipos,
+  // regras de validação) e um chunk manual a tornaria dependência estática do app
 }
 
 export default defineConfig({
