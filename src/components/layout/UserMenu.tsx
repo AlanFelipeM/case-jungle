@@ -4,7 +4,7 @@ import type { User } from '@/types'
 import { useLogout } from '@/hooks/useAuth'
 import { HeartOutlineIcon, LogoutIcon, UserIcon, UserOutlineIcon } from '@/components/icons'
 import { toast } from '@/lib/toast'
-import { isProtectedPath } from '@/components/auth/AuthProvider'
+import { isProtectedPath } from '@/components/auth/authContext'
 import {
   DropdownMenu,
   DropdownMenuContent,

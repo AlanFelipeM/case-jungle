@@ -11,7 +11,7 @@ import { CartCards, CartTable } from '@/components/cart/CartItems'
 import { CartSummary } from '@/components/cart/CartSummary'
 import { NftCarousel } from '@/components/nft/NftCarousel'
 import { useSession } from '@/hooks/useAuth'
-import { useAuthPrompt } from '@/components/auth/AuthProvider'
+import { useAuthPrompt } from '@/components/auth/authContext'
 
 const PAGE = 'mx-auto max-w-[1440px] px-5 pt-5 font-mono text-kurio-cream md:px-6 md:pt-7'
 

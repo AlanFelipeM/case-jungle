@@ -37,7 +37,7 @@ const EMPTY_FORM: CheckoutForm = {
 export function PaymentPage() {
   const isDesktop = useMediaQuery('(min-width: 768px)')
   const { data: cart, isLoading: cartLoading } = useCart()
-  const items = cart?.items ?? []
+  const items = React.useMemo(() => cart?.items ?? [], [cart])
   const quoteQuery = useCartQuote(items.length > 0)
   const { data: profile } = useProfile()
   const { data: wallets = [], isLoading: walletsLoading } = useWallets()

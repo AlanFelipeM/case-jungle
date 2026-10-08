@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint . --max-warnings 0",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:update": "playwright test --update-snapshots",
@@ -38,15 +38,21 @@
     "tailwind-merge": "^3.3.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@mswjs/socket.io-binding": "^0.2.0",
     "@playwright/test": "^1.52.0",
     "@tailwindcss/vite": "^4.1.6",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.4.1",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "globals": "^17.13.0",
     "msw": "^2.7.5",
     "tailwindcss": "^4.1.6",
     "typescript": "^5.8.3",
+    "typescript-eslint": "^8.71.1",
     "vite": "^6.3.5"
   },
   "msw": {

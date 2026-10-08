@@ -1,26 +1,35 @@
-import type React from 'react'
+import React from 'react'
 import {
   createRootRoute,
   createRoute,
   createRouter,
+  lazyRouteComponent,
   Outlet,
   redirect,
+  type RouteComponent,
 } from '@tanstack/react-router'
 import { Layout } from '@/components/layout/Layout'
 import { HomePage } from '@/pages/HomePage'
-import { NftDetailPage } from '@/pages/NftDetailPage'
-import { CartPage } from '@/pages/CartPage'
-import { PaymentPage } from '@/pages/PaymentPage'
-import { OrderPage } from '@/pages/OrderPage'
-import { ExplorerPage } from '@/pages/ExplorerPage'
 import { NotFoundPage, UnavailablePage } from '@/pages/StatusPage'
 import { parseCatalogSearch } from '@/lib/catalogSearch'
-import { AuthPage } from '@/pages/AuthPage'
-import { ProfileLayout, ProfileUnavailable } from '@/pages/profile/ProfileLayout'
-import { ProfileDataPage } from '@/pages/profile/ProfileDataPage'
-import { WalletsPage } from '@/pages/profile/WalletsPage'
-import { FavoritesListPage } from '@/pages/profile/FavoritesListPage'
 import { getToken } from '@/lib/session'
+
+// Início fica no bundle principal (primeira tela); as demais rotas carregam sob demanda
+// e são pré-carregadas na intenção de navegação (hover/foco nos links)
+const NftDetailPage = lazyRouteComponent(() => import('@/pages/NftDetailPage'), 'NftDetailPage')
+const CartPage = lazyRouteComponent(() => import('@/pages/CartPage'), 'CartPage')
+const PaymentPage = lazyRouteComponent(() => import('@/pages/PaymentPage'), 'PaymentPage')
+const OrderPage = lazyRouteComponent(() => import('@/pages/OrderPage'), 'OrderPage')
+const ExplorerPage = lazyRouteComponent(() => import('@/pages/ExplorerPage'), 'ExplorerPage')
+const AuthPage = lazyRouteComponent(() => import('@/pages/AuthPage'), 'AuthPage')
+const ProfileLayout = lazyRouteComponent(() => import('@/pages/profile/ProfileLayout'), 'ProfileLayout')
+// Com props: React.lazy preserva a tipagem (o roteador já renderiza dentro de Suspense)
+const ProfileUnavailable = React.lazy(() =>
+  import('@/pages/profile/ProfileLayout').then((m) => ({ default: m.ProfileUnavailable })),
+)
+const ProfileDataPage = lazyRouteComponent(() => import('@/pages/profile/ProfileDataPage'), 'ProfileDataPage')
+const WalletsPage = lazyRouteComponent(() => import('@/pages/profile/WalletsPage'), 'WalletsPage')
+const FavoritesListPage = lazyRouteComponent(() => import('@/pages/profile/FavoritesListPage'), 'FavoritesListPage')
 
 /** Parâmetros de /login e /cadastro: retorno ao fluxo anterior e motivo */
 const authSearch = (raw: Record<string, unknown>): { redirect?: string; reason?: 'expired' } => ({
@@ -124,7 +133,7 @@ const profileRoute = createRoute({
   component: ProfileLayout,
 })
 
-const profileSection = <TPath extends string>(path: TPath, component: () => React.ReactNode) =>
+const profileSection = <TPath extends string>(path: TPath, component: RouteComponent) =>
   createRoute({ getParentRoute: () => profileRoute, path, component })
 
 const profileChildren = [

@@ -3,6 +3,14 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
+/** Bibliotecas agrupadas em chunks estáveis: baixam em paralelo e ficam em cache entre deploys */
+const VENDOR_CHUNKS: Record<string, RegExp> = {
+  react: /node_modules[\\/](react|react-dom|scheduler)[\\/]/,
+  tanstack: /node_modules[\\/]@tanstack[\\/]/,
+  ui: /node_modules[\\/](@radix-ui|@floating-ui|react-remove-scroll|react-remove-scroll-bar|react-style-singleton|use-callback-ref|use-sidecar|aria-hidden|tailwind-merge|clsx|class-variance-authority)[\\/]/,
+  http: /node_modules[\\/](axios)[\\/]/,
+}
+
 export default defineConfig({
   plugins: [
     react(),
@@ -11,6 +19,15 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+    },
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          return Object.keys(VENDOR_CHUNKS).find((name) => VENDOR_CHUNKS[name].test(id))
+        },
+      },
     },
   },
 })

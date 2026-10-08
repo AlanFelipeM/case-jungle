@@ -32,6 +32,7 @@ npx msw init public
 | `npm run build` | Verificação de tipos (`tsc -b`) e build de produção em `dist/` |
 | `npm run preview` | Serve o build de `dist/` |
 | `npm run typecheck` | Verificação de tipos sem gerar arquivos |
+| `npm run lint` | ESLint (TypeScript, regras de hooks e Fast Refresh), sem avisos tolerados |
 | `npm run test:e2e` | Testes E2E e regressão visual (sobe o `npm run dev` automaticamente) |
 | `npm run test:e2e:ui` | Playwright em modo interativo |
 | `npm run test:e2e:update` | Regenera as baselines de regressão visual |

@@ -43,9 +43,6 @@
 
   --color-border: #3d2710;
 
-  --font-family-sans: 'Inter', 'Space Grotesk', system-ui, sans-serif;
-  --font-family-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
-
   /* Figma tokens (frame "Início") */
   --font-mono: 'Roboto Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
   --color-kurio-bg: #140d0a;
@@ -73,9 +70,6 @@
   }
 }
 
-/* Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap');
-
 * {
   box-sizing: border-box;
 }
@@ -83,7 +77,8 @@
 body {
   background-color: #140d0a;
   color: #f5e6cc;
-  font-family: 'Inter', system-ui, sans-serif;
+  /* Fonte do layout, servida localmente (@fontsource-variable/roboto-mono) */
+  font-family: var(--font-mono);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
