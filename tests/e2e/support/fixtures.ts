@@ -105,6 +105,34 @@ export class App {
     expect(status).toBe(201)
   }
 
+  /** Cria um pedido pela API para o usuário da sessão (carrinho com 1 unidade do NFT padrão) */
+  async createOrderByApi() {
+    await this.addToCartByApi()
+    const quote = await this.quote()
+    const address = '0xA91F3c7D2b4E6f8A0c1B3d5E7f9A2c4E6b8DE82C'
+    const session = await this.api<{ id: string }>('POST', '/wallet/connect', { connector: 'metamask', network: 'ethereum', address })
+    const body = {
+      walletSessionId: session.data.id,
+      items: [{ itemId: `${EMERALD.id}:${EMERALD.edition}`, quantity: 1, unitPrice: EMERALD.price }],
+      expectedTotal: quote.total,
+      collector: { displayName: 'Nova Sato', username: 'nova.kurio', profileName: 'Nova', email: 'nova@kurio.app', ensName: 'nova.kurio', referralCode: '' },
+      wallet: { network: 'ethereum', address, connector: 'metamask' },
+    }
+    const order = await this.page.evaluate(async (body) => {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': crypto.randomUUID(),
+          Authorization: `Bearer ${localStorage.getItem('kurio:token')}`,
+        },
+        body: JSON.stringify(body),
+      })
+      return (await res.json()) as { id: string }
+    }, body)
+    return order.id
+  }
+
   /** Pedidos gravados pelo mock (para verificar que não houve duplicação) */
   orderCount() {
     return this.page.evaluate(() => {

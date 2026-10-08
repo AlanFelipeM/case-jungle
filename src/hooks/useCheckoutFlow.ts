@@ -78,7 +78,7 @@ export function useCheckoutFlow({ form, wallets, onValidationErrors }: Options) 
 
   // Pedido salvo que não existe mais (ex.: reset dos mocks)
   React.useEffect(() => {
-    if (order.isError && getErrorStatus(order.error) === 404) {
+    if (order.isError && [403, 404].includes(getErrorStatus(order.error) ?? 0)) {
       clearAttempt()
       setState({ phase: 'idle' })
       setDialogOpen(false)

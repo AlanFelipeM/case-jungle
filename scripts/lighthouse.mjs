@@ -89,7 +89,7 @@ const fmtMetric = (id, value) => {
 }
 
 async function main() {
-  if (!skipBuild) run('npm run build', { VITE_ENABLE_MSW: 'true' })
+  if (!skipBuild) run('npm run build:demo')
   fs.rmSync(REPORTS, { recursive: true, force: true })
   fs.mkdirSync(REPORTS, { recursive: true })
 
@@ -142,7 +142,7 @@ async function main() {
     os: `${os.type()} ${os.release()} (${os.arch()})`,
     cpu: `${os.cpus()[0]?.model.trim()} × ${os.cpus().length}`,
     memory: `${Math.round(os.totalmem() / 1024 ** 3)} GB`,
-    server: `vite preview (build de produção, VITE_ENABLE_MSW=true) em ${BASE_URL}`,
+    server: `vite preview (npm run build:demo: build de produção com VITE_ENABLE_MSW=true) em ${BASE_URL}`,
     runs: RUNS,
   }
   fs.writeFileSync(path.join(OUT, 'summary.json'), JSON.stringify({ environment, targets: TARGETS, results }, null, 2) + '\n')

@@ -92,4 +92,19 @@ test.describe('Teclado, foco e formulários', () => {
       expect(overflow, `overflow horizontal em ${path}`).toBeLessThanOrEqual(0)
     }
   })
+
+  test('tablet (768px) e zoom de 400% (320px) sem overflow nem conteúdo cortado', async ({ app, page }) => {
+    test.skip(app.isMobile, 'Os viewports são definidos no próprio teste')
+    await app.loginByApi('nova')
+    await app.addToCartByApi()
+    for (const viewport of [{ width: 768, height: 1024 }, { width: 320, height: 720 }]) {
+      await page.setViewportSize(viewport)
+      for (const path of ['/', `/nft/${EMERALD.id}`, '/carrinho', '/pagamento', '/perfil', '/perfil/carteiras']) {
+        await app.goto(path)
+        await page.waitForLoadState('networkidle')
+        const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
+        expect(overflow, `overflow horizontal em ${path} (${viewport.width}px)`).toBeLessThanOrEqual(0)
+      }
+    }
+  })
 })

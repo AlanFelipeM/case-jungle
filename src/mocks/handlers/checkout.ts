@@ -296,8 +296,10 @@ export const checkoutHandlers = [
     const user = await requireUser(request)
     if (user instanceof Response) return user
     await delay(150)
-    // Pedido de outro usuário é tratado como inexistente
-    if (readStore().orders[String(params.id)]?.userId !== user.id) return error(404, 'NOT_FOUND', 'Pedido não encontrado.')
+    const stored = readStore().orders[String(params.id)]
+    if (!stored) return error(404, 'NOT_FOUND', 'Pedido não encontrado.')
+    // Pedido de outra conta: falta de permissão (nenhum dado do pedido é devolvido)
+    if (stored.userId !== user.id) return error(403, 'FORBIDDEN', 'Este pedido pertence a outra conta.')
     const order = finalize(String(params.id))
     if (!order) return error(404, 'NOT_FOUND', 'Pedido não encontrado.')
     return HttpResponse.json(order)

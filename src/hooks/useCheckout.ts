@@ -65,7 +65,8 @@ export function useOrder(orderId: string | undefined) {
     queryKey: checkoutKeys.order(orderId ?? ''),
     queryFn: async ({ signal }) => (await api.get<Order>(`/orders/${orderId}`, { signal })).data,
     enabled: !!orderId,
-    retry: (failureCount, error) => getErrorStatus(error) !== 404 && failureCount < 2,
+    // Inexistente ou de outra conta não é falha transitória: não repete
+    retry: (failureCount, error) => ![403, 404].includes(getErrorStatus(error) ?? 0) && failureCount < 2,
     // O evento order.updated é a via principal; a consulta periódica cobre eventos perdidos
     refetchInterval: (query) => (query.state.data?.status === 'pending' ? 5_000 : false),
   })

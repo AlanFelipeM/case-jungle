@@ -90,7 +90,7 @@ export function CartPage() {
         ) : items.length === 0 ? (
           <EmptyCart />
         ) : (
-          <div className="mt-4 grid gap-10 md:mt-0 lg:grid-cols-[minmax(0,782px)_332px] lg:justify-between lg:gap-12">
+          <div className="mt-4 grid grid-cols-1 gap-10 md:mt-0 lg:grid-cols-[minmax(0,782px)_332px] lg:justify-between lg:gap-12">
             <div className="min-w-0">
               <CartChanges quote={quote} items={items} />
               {itemMutation.isError && (

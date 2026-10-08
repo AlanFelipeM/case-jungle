@@ -42,8 +42,18 @@ export function OrderPage() {
         ) : isError || !order ? (
           <MessageState
             icon={<XCircle size={40} aria-hidden className="text-[#f4a28c]" />}
-            title={getErrorStatus(error) === 404 ? 'Pedido não encontrado' : 'Não foi possível carregar o pedido'}
-            text="Confira o link ou volte ao início para continuar explorando."
+            title={
+              getErrorStatus(error) === 404
+                ? 'Pedido não encontrado'
+                : getErrorStatus(error) === 403
+                  ? 'Você não tem acesso a este pedido'
+                  : 'Não foi possível carregar o pedido'
+            }
+            text={
+              getErrorStatus(error) === 403
+                ? 'Este pedido pertence a outra conta. Entre com a conta que fez a compra para ver o recibo.'
+                : 'Confira o link ou volte ao início para continuar explorando.'
+            }
           />
         ) : order.status === 'pending' ? (
           <MessageState
