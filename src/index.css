@@ -106,6 +106,14 @@ body {
   border-radius: 0.5rem;
 }
 
+/* Movimento reduzido: skeleton estático (mesmas dimensões, sem brilho em movimento) */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background: #2a1a08;
+  }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
