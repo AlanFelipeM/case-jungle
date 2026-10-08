@@ -105,6 +105,11 @@ export function replayEvent(event: NFTUpdatedEvent) {
   broadcast(event)
 }
 
+/** Conexões abertas e o usuário de cada uma (diagnóstico e sincronização dos testes) */
+export function getConnections() {
+  return [...clients.values()].map(({ userId }) => ({ userId }))
+}
+
 /** Derruba as conexões abertas (cenário de queda e reconexão) */
 export function dropConnections() {
   clients.forEach(({ close }) => close())

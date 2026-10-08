@@ -1,6 +1,7 @@
 /*
  * Cenários de checkout configuráveis e reproduzíveis (persistidos para sobreviver a refresh).
  * Ex.: __kurioMock.setScenario({ payment: 'reject' })
+ *      __kurioMock.setScenario({ networkLatencyMs: 2000, latencyJitterMs: 500 })
  */
 export interface CheckoutScenario {
   /** Resposta da carteira ao pedido de conexão */
@@ -11,6 +12,10 @@ export interface CheckoutScenario {
   orderResponseDelayMs: number
   /** Tempo até a rede confirmar/recusar o pagamento */
   paymentDelayMs: number
+  /** Latência extra aplicada a todas as rotas /api (lentidão de rede) */
+  networkLatencyMs: number
+  /** Variação aleatória somada à latência extra (0 a N ms) */
+  latencyJitterMs: number
 }
 
 const STORAGE_KEY = 'kurio:mock:scenario'
@@ -20,6 +25,8 @@ export const DEFAULT_SCENARIO: CheckoutScenario = {
   payment: 'confirm',
   orderResponseDelayMs: 400,
   paymentDelayMs: 3_000,
+  networkLatencyMs: 0,
+  latencyJitterMs: 0,
 }
 
 export function getScenario(): CheckoutScenario {
