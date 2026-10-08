@@ -2,6 +2,8 @@
 
 Frontend do marketplace Kurio: descoberta de NFTs, carrinho, checkout com carteira simulada, confirmação de pedido e área do colecionador. Toda a API (REST e Socket.IO) é simulada na camada de rede com MSW, então o projeto roda sem backend.
 
+**Aplicação publicada:** https://case-jungle.vercel.app · **Repositório:** https://github.com/AlanFelipeM/case-jungle
+
 > Decisões de arquitetura, contratos e limitações: [ARCHITECTURE.md](ARCHITECTURE.md).
 > Enunciado original: [docs/DESAFIO.md](docs/DESAFIO.md).
 
